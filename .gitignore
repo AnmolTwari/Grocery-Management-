@@ -1,0 +1,38 @@
+# ---- Secrets ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- Java / Maven (backend) ----
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+*.class
+*.jar
+!backend/.mvn/wrapper/*.jar
+
+# ---- Node (frontend) ----
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ---- IDE / Editor ----
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ---- Local tooling ----
+.claude/
+
+# ---- OS / Misc ----
+*.log
+logs/
+tmp/
