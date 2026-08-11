@@ -1,52 +1,32 @@
-import './components/AppShell.css'
-
-const NAV_ITEMS = [
-  { label: 'Dashboard', href: '#' },
-  { label: 'Products', href: '#' },
-  { label: 'Inventory', href: '#' },
-  { label: 'Sales', href: '#' },
-  { label: 'Reports', href: '#' },
-  { label: 'Settings', href: '#' },
-]
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import Layout from './components/Layout'
+import DashboardPage from './pages/dashboard/DashboardPage'
+import InventoryPage from './pages/inventory/InventoryPage'
+import PlaceholderPage from './pages/PlaceholderPage'
+import ProductFormPage from './pages/products/ProductFormPage'
+import ProductListPage from './pages/products/ProductListPage'
+import NewSalePage from './pages/sales/NewSalePage'
+import SaleDetailPage from './pages/sales/SaleDetailPage'
+import SalesPage from './pages/sales/SalesPage'
 
 function App() {
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true" />
-          <span className="brand-name">Grocery Manager</span>
-        </div>
-        <nav aria-label="Main navigation">
-          <ul className="nav-list">
-            {NAV_ITEMS.map((item) => (
-              <li key={item.label}>
-                <a className="nav-link" href={item.href}>
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </aside>
-
-      <main className="main">
-        <header className="topbar">
-          <h1>Dashboard</h1>
-        </header>
-
-        <div className="content">
-          <div className="card">
-            <h2>Welcome to Grocery Manager</h2>
-            <p>
-              Phase 0 project setup is complete. The application shell is
-              ready — products, inventory, and sales features are built in
-              the next phases.
-            </p>
-          </div>
-        </div>
-      </main>
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index element={<DashboardPage />} />
+          <Route path="products" element={<ProductListPage />} />
+          <Route path="products/new" element={<ProductFormPage />} />
+          <Route path="products/:id/edit" element={<ProductFormPage />} />
+          <Route path="inventory" element={<InventoryPage />} />
+          <Route path="sales" element={<SalesPage />} />
+          <Route path="sales/new" element={<NewSalePage />} />
+          <Route path="sales/:id" element={<SaleDetailPage />} />
+          <Route path="reports" element={<PlaceholderPage title="Reports" />} />
+          <Route path="settings" element={<PlaceholderPage title="Settings" />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
   )
 }
 

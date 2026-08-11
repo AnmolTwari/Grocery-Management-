@@ -96,5 +96,16 @@ default is `dev`).
 
 All endpoints use the `/api` prefix. See
 [`Grocery-Shop-Management-System-Docs/Architecture.md`](Grocery-Shop-Management-System-Docs/Architecture.md)
-for the endpoint map. Authentication and the feature endpoints are added
-in later phases.
+for the endpoint map. Implemented so far:
+
+| Endpoint                                     | Description                        |
+| -------------------------------------------- | ---------------------------------- |
+| `GET/POST /api/categories`                   | Categories                         |
+| `GET/POST /api/products`, `GET/PUT/DELETE /api/products/{id}` | Products (search/filter/paginate) |
+| `POST /api/inventory/stock-in`               | Add stock                          |
+| `POST /api/inventory/adjustment`             | Correct stock level                |
+| `GET /api/inventory/movements`               | Stock movement history             |
+| `POST /api/sales`                            | Create a sale (reduces stock)      |
+| `GET /api/sales`, `GET /api/sales/{id}`      | Sale history / sale detail         |
+
+Authentication arrives in a later phase.
