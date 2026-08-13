@@ -12,18 +12,24 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.grocery.manager.dto.auth.AuthRequest;
 import com.grocery.manager.dto.auth.AuthResponse;
 import com.grocery.manager.entity.User;
 import com.grocery.manager.exception.DuplicateResourceException;
 import com.grocery.manager.repository.UserRepository;
+import com.grocery.manager.security.AuthCookieService;
 import com.grocery.manager.security.JwtService;
-import com.grocery.manager.service.UserDetailsServiceImpl;
+import com.grocery.manager.security.RateLimiterService;
 
 @ExtendWith(MockitoExtension.class)
 class AuthControllerTest {
@@ -41,7 +47,10 @@ class AuthControllerTest {
     private JwtService jwtService;
 
     @Mock
-    private UserDetailsServiceImpl userDetailsService;
+    private AuthCookieService authCookieService;
+
+    @Mock
+    private RateLimiterService rateLimiterService;
 
     @InjectMocks
     private AuthController authController;
@@ -49,7 +58,7 @@ class AuthControllerTest {
     private final AuthRequest request = new AuthRequest();
 
     @Test
-    void loginReturnsTokenAndType() {
+    void loginSetsHttpOnlyCookieAndReturnsUsername() {
         request.setUsername("shopkeeper");
         request.setPassword("shop123");
 
@@ -63,17 +72,39 @@ class AuthControllerTest {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(jwtService.generateToken(user)).thenReturn("jwt-token");
+        when(authCookieService.createTokenCookie("jwt-token"))
+                .thenReturn(ResponseCookie.from(AuthCookieService.COOKIE_NAME, "jwt-token")
+                        .httpOnly(true).build());
 
-        AuthResponse response = authController.login(request).getBody();
+        MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        AuthResponse body = authController.login(request, httpRequest, response).getBody();
 
-        assertThat(response).isNotNull();
-        assertThat(response.getToken()).isEqualTo("jwt-token");
-        assertThat(response.getType()).isEqualTo("Bearer");
-        assertThat(response.getUsername()).isEqualTo("shopkeeper");
+        assertThat(body).isNotNull();
+        assertThat(body.getUsername()).isEqualTo("shopkeeper");
+        String cookie = response.getHeader(HttpHeaders.SET_COOKIE);
+        assertThat(cookie).contains("access_token=jwt-token").contains("HttpOnly");
+        verify(rateLimiterService).clearLoginAttempts("shopkeeper");
     }
 
     @Test
-    void registerCreatesUserAndReturnsToken() {
+    void loginRecordsFailedAttemptOnBadCredentials() {
+        request.setUsername("shopkeeper");
+        request.setPassword("wrong");
+
+        when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
+                .thenThrow(new BadCredentialsException("bad"));
+
+        MockHttpServletRequest httpRequest = new MockHttpServletRequest();
+        MockHttpServletResponse response = new MockHttpServletResponse();
+
+        assertThatThrownBy(() -> authController.login(request, httpRequest, response))
+                .isInstanceOf(BadCredentialsException.class);
+        verify(rateLimiterService).recordFailedLogin(httpRequest, "shopkeeper");
+    }
+
+    @Test
+    void registerCreatesUserWithoutToken() {
         request.setUsername("owner2");
         request.setPassword("secret123");
 
@@ -85,14 +116,11 @@ class AuthControllerTest {
                 .enabled(true)
                 .build();
         when(userRepository.save(any(User.class))).thenReturn(saved);
-        when(userDetailsService.loadUserByUsername("owner2")).thenReturn(saved);
-        when(jwtService.generateToken(saved)).thenReturn("jwt-token");
 
-        AuthResponse response = authController.register(request).getBody();
+        AuthResponse response = authController.register(request, new MockHttpServletRequest()).getBody();
 
         assertThat(response).isNotNull();
         assertThat(response.getUsername()).isEqualTo("owner2");
-        assertThat(response.getToken()).isEqualTo("jwt-token");
         verify(userRepository).save(any(User.class));
     }
 
@@ -103,8 +131,20 @@ class AuthControllerTest {
 
         when(userRepository.existsByUsername("cashier")).thenReturn(true);
 
-        assertThatThrownBy(() -> authController.register(request))
+        assertThatThrownBy(() -> authController.register(request, new MockHttpServletRequest()))
                 .isInstanceOf(DuplicateResourceException.class);
         verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void logoutClearsCookie() {
+        when(authCookieService.createLogoutCookie())
+                .thenReturn(ResponseCookie.from(AuthCookieService.COOKIE_NAME, "").maxAge(0).build());
+
+        MockHttpServletResponse response = new MockHttpServletResponse();
+        authController.logout(response);
+
+        String cookie = response.getHeader(HttpHeaders.SET_COOKIE);
+        assertThat(cookie).contains("access_token=");
     }
 }

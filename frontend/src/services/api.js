@@ -1,33 +1,49 @@
 const API_PREFIX = '/api'
-const TOKEN_KEY = 'auth_token'
+const LOGGED_IN_KEY = 'logged_in'
 
-function getAuthHeader() {
-  const token = localStorage.getItem(TOKEN_KEY)
-  return token ? { 'Authorization': `Bearer ${token}` } : {}
+function setLoggedIn() {
+  localStorage.setItem(LOGGED_IN_KEY, '1')
 }
 
-function clearAuth() {
-  localStorage.removeItem(TOKEN_KEY)
+function clearLoggedIn() {
+  localStorage.removeItem(LOGGED_IN_KEY)
 }
 
-async function request(path, { method = 'GET', body, ...options } = {}) {
+function getCsrfToken() {
+  const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)
+  return match ? decodeURIComponent(match[1]) : null
+}
+
+async function loadCsrf() {
+  const response = await fetch(`${API_PREFIX}/auth/csrf`, { credentials: 'include' })
+  if (!response.ok) {
+    throw new Error('Failed to initialize session')
+  }
+}
+
+async function request(path, { method = 'GET', body, retried = false, ...options } = {}) {
+  const csrfToken = getCsrfToken()
   const headers = {
-    ...getAuthHeader(),
     ...(body ? { 'Content-Type': 'application/json' } : {}),
-    ...(options.headers || {})
+    ...(csrfToken ? { 'X-XSRF-TOKEN': csrfToken } : {}),
+    ...(options.headers || {}),
   }
 
   const response = await fetch(`${API_PREFIX}${path}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
+    credentials: 'include',
     ...options,
   })
 
+  if (response.status === 403 && !retried) {
+    await loadCsrf()
+    return request(path, { method, body, retried: true, ...options })
+  }
+
   if (response.status === 401 && !path.startsWith('/auth/')) {
-
-
-    clearAuth()
+    clearLoggedIn()
     window.location.href = '/login'
     throw new Error('Session expired. Please log in again.')
   }
@@ -52,7 +68,7 @@ async function buildError(response) {
       message = data.message
     }
   } catch {
-
+    // response had no JSON body
   }
   const error = new Error(message)
   error.status = response.status
@@ -60,22 +76,35 @@ async function buildError(response) {
 }
 
 export const auth = {
-  login: (username, password) =>
-    request('/auth/login', { method: 'POST', body: { username, password } }).then(data => {
-      localStorage.setItem(TOKEN_KEY, data.token)
-      return data
-    }),
+  init: async () => {
+    try {
+      await loadCsrf()
+    } catch {
+      // backend unreachable — requests will fail with a visible error
+    }
+  },
+
+  login: async (username, password) => {
+    const data = await request('/auth/login', { method: 'POST', body: { username, password } })
+    setLoggedIn()
+    return data
+  },
 
   register: (username, password) =>
     request('/auth/register', { method: 'POST', body: { username, password } }),
 
-  logout: () => {
-    clearAuth()
+  logout: async () => {
+    try {
+      await request('/auth/logout', { method: 'POST' })
+    } catch {
+      // server unreachable — cookie may outlive the session, UI state is cleared anyway
+    }
+    clearLoggedIn()
   },
 
-  getToken: () => localStorage.getItem(TOKEN_KEY),
+  me: () => request('/auth/me'),
 
-  isAuthenticated: () => !!localStorage.getItem(TOKEN_KEY),
+  isAuthenticated: () => localStorage.getItem(LOGGED_IN_KEY) === '1',
 }
 
 export const api = {

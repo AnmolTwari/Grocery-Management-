@@ -18,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import com.grocery.manager.entity.User;
 import com.grocery.manager.repository.UserRepository;
 import com.grocery.manager.security.CurrentUserService;
+import com.grocery.manager.security.RateLimiterService;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -31,6 +32,9 @@ class SettingsServiceTest {
 
     @Mock
     private CurrentUserService currentUserService;
+
+    @Mock
+    private RateLimiterService rateLimiterService;
 
     @InjectMocks
     private SettingsService settingsService;

@@ -12,8 +12,8 @@ const NAV_ITEMS = [
 ]
 
 export default function Layout() {
-  function handleLogout() {
-    auth.logout()
+  async function handleLogout() {
+    await auth.logout()
     window.location.href = '/login'
   }
 

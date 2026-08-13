@@ -1,21 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { auth } from '../../services/api'
 import { changePassword } from '../../services/settings'
 
-function usernameFromToken() {
-  const token = auth.getToken()
-  if (!token) return ''
-  try {
-    const payload = token.split('.')[1]
-    const json = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')))
-    return json.sub || ''
-  } catch {
-    return ''
-  }
-}
-
 export default function SettingsPage() {
-  const [username] = useState(usernameFromToken)
+  const [username, setUsername] = useState('')
   const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -24,6 +12,12 @@ export default function SettingsPage() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    auth.me()
+      .then((data) => setUsername(data.username || ''))
+      .catch(() => setUsername(''))
+  }, [])
 
   function validate() {
     const errors = {}
