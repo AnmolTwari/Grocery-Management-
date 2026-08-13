@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/** A grocery product sold by the shop. */
+/** A grocery product sold by the shop. Owned by a shop owner. */
 @Entity
 @Table(name = "products", indexes = {
         @Index(name = "idx_product_name", columnList = "name"),
@@ -30,6 +30,10 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
     @Column(nullable = false, length = 150)
     private String name;
@@ -75,9 +79,10 @@ public class Product {
         // Required by JPA.
     }
 
-    public Product(String name, Category category, String brand, String sku, Unit unit,
+    public Product(User owner, String name, Category category, String brand, String sku, Unit unit,
             BigDecimal purchasePrice, BigDecimal sellingPrice,
             BigDecimal currentQuantity, BigDecimal minimumStockLevel, boolean active) {
+        this.owner = owner;
         this.name = name;
         this.category = category;
         this.brand = brand;
@@ -114,6 +119,10 @@ public class Product {
 
     public Long getId() {
         return id;
+    }
+
+    public User getOwner() {
+        return owner;
     }
 
     public String getName() {

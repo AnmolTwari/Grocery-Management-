@@ -22,11 +22,13 @@ import com.grocery.manager.entity.Product;
 import com.grocery.manager.entity.Sale;
 import com.grocery.manager.entity.SaleItem;
 import com.grocery.manager.entity.StockMovement;
+import com.grocery.manager.entity.User;
 import com.grocery.manager.exception.InsufficientStockException;
 import com.grocery.manager.exception.ResourceNotFoundException;
 import com.grocery.manager.repository.ProductRepository;
 import com.grocery.manager.repository.SaleRepository;
 import com.grocery.manager.repository.StockMovementRepository;
+import com.grocery.manager.security.CurrentUserService;
 
 /**
  * Sales business rules. Creating a sale is one transaction: validate
@@ -39,16 +41,20 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final CurrentUserService currentUserService;
 
     public SaleService(SaleRepository saleRepository, ProductRepository productRepository,
-            StockMovementRepository stockMovementRepository) {
+            StockMovementRepository stockMovementRepository,
+            CurrentUserService currentUserService) {
         this.saleRepository = saleRepository;
         this.productRepository = productRepository;
         this.stockMovementRepository = stockMovementRepository;
+        this.currentUserService = currentUserService;
     }
 
     @Transactional
     public SaleResponse createSale(SaleRequest request) {
+        User owner = currentUserService.currentUser();
         requireItems(request.items());
         Map<Long, Product> products = new HashMap<>();
         Map<Long, BigDecimal> soldQuantities = new LinkedHashMap<>();
@@ -66,7 +72,7 @@ public class SaleService {
 
         assertStockAvailable(products, soldQuantities);
 
-        Sale sale = saleRepository.save(new Sale(items, total));
+        Sale sale = saleRepository.save(new Sale(owner, items, total));
 
         for (Map.Entry<Long, BigDecimal> sold : soldQuantities.entrySet()) {
             Product product = products.get(sold.getKey());
@@ -88,7 +94,8 @@ public class SaleService {
 
     @Transactional(readOnly = true)
     public Page<SaleSummaryResponse> listSales(Pageable pageable) {
-        return saleRepository.findAll(pageable).map(SaleSummaryResponse::from);
+        return saleRepository.findByOwner(currentUserService.currentUser(), pageable)
+                .map(SaleSummaryResponse::from);
     }
 
     private void requireItems(List<SaleItemRequest> items) {
@@ -116,13 +123,13 @@ public class SaleService {
     }
 
     private Sale findSale(Long id) {
-        return saleRepository.findById(id)
+        return saleRepository.findByIdAndOwner(id, currentUserService.currentUser())
                 .orElseThrow(() -> new ResourceNotFoundException("SALE_NOT_FOUND",
                         "Sale not found with id " + id));
     }
 
     private Product findProduct(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByIdAndOwner(id, currentUserService.currentUser())
                 .orElseThrow(() -> new ResourceNotFoundException("PRODUCT_NOT_FOUND",
                         "Product not found with id " + id));
     }

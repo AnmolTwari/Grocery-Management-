@@ -10,7 +10,7 @@ export default defineConfig({
     // so the frontend and backend communicate without CORS setup.
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8081',
         changeOrigin: true,
       },
     },

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import StockStatusBadge from '../../components/StockStatusBadge'
 import { listCategories } from '../../services/categories'
-import { deactivateProduct, listProducts } from '../../services/products'
+import { listProducts, removeProduct } from '../../services/products'
 import { formatCurrency } from '../../utils/format'
 import { STOCK_STATUS_LABELS, UNIT_LABELS } from '../../utils/units'
 
@@ -25,6 +25,7 @@ export default function ProductListPage() {
   const [products, setProducts] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(null)
   const [reload, setReload] = useState(0)
 
   useEffect(() => {
@@ -72,12 +73,14 @@ export default function ProductListPage() {
     }
   }, [search, categoryId, stockStatus, page, reload])
 
-  async function handleDeactivate(product) {
-    if (!window.confirm(`Deactivate "${product.name}"? It will be hidden from the product list.`)) {
-      return
-    }
+  async function handleRemove(product) {
+    const confirmed = window.confirm(
+      `Remove "${product.name}"?\n\nIf it has sale or stock history it will be hidden from the list; otherwise it is deleted permanently.`,
+    )
+    if (!confirmed) return
     try {
-      await deactivateProduct(product.id)
+      await removeProduct(product.id)
+      setSuccess(`"${product.name}" removed.`)
       setReload((value) => value + 1)
     } catch (err) {
       setError(err.message)
@@ -138,6 +141,7 @@ export default function ProductListPage() {
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
+      {success && !error && <div className="alert alert-success">{success}</div>}
 
       {isEmpty && !loading && (
         <div className="card empty-state">
@@ -182,9 +186,9 @@ export default function ProductListPage() {
                       <button
                         type="button"
                         className="btn btn-danger btn-sm"
-                        onClick={() => handleDeactivate(product)}
+                        onClick={() => handleRemove(product)}
                       >
-                        Deactivate
+                        Remove
                       </button>
                     </td>
                   </tr>

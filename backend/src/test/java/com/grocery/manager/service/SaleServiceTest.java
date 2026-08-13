@@ -35,11 +35,13 @@ import com.grocery.manager.entity.Sale;
 import com.grocery.manager.entity.SaleItem;
 import com.grocery.manager.entity.StockMovement;
 import com.grocery.manager.entity.Unit;
+import com.grocery.manager.entity.User;
 import com.grocery.manager.exception.InsufficientStockException;
 import com.grocery.manager.exception.ResourceNotFoundException;
 import com.grocery.manager.repository.ProductRepository;
 import com.grocery.manager.repository.SaleRepository;
 import com.grocery.manager.repository.StockMovementRepository;
+import com.grocery.manager.security.CurrentUserService;
 
 @ExtendWith(MockitoExtension.class)
 class SaleServiceTest {
@@ -53,9 +55,13 @@ class SaleServiceTest {
     @Mock
     private StockMovementRepository stockMovementRepository;
 
+    @Mock
+    private CurrentUserService currentUserService;
+
     @InjectMocks
     private SaleService saleService;
 
+    private User owner;
     private Product product;
 
     private SaleRequest saleRequest(BigDecimal quantity) {
@@ -64,8 +70,10 @@ class SaleServiceTest {
 
     @BeforeEach
     void setUp() {
-        Category category = new Category("Dairy");
-        product = new Product("Milk", category, "Amul", "MILK-1", Unit.PIECE,
+        owner = User.builder().username("owner").build();
+        when(currentUserService.currentUser()).thenReturn(owner);
+        Category category = new Category(owner, "Dairy");
+        product = new Product(owner, "Milk", category, "Amul", "MILK-1", Unit.PIECE,
                 new BigDecimal("20.00"), new BigDecimal("25.00"),
                 new BigDecimal("10"), new BigDecimal("5"), true);
         ReflectionTestUtils.setField(product, "id", 1L);
@@ -73,7 +81,7 @@ class SaleServiceTest {
 
     @Test
     void createSaleComputesTotalReducesStockAndRecordsMovement() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
         when(saleRepository.save(any(Sale.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
@@ -96,7 +104,7 @@ class SaleServiceTest {
 
     @Test
     void createSaleThrowsWhenStockIsInsufficient() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
 
         assertThatThrownBy(() -> saleService.createSale(saleRequest(new BigDecimal("15"))))
                 .isInstanceOf(InsufficientStockException.class)
@@ -107,7 +115,7 @@ class SaleServiceTest {
 
     @Test
     void createSaleThrowsWhenProductMissing() {
-        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+        when(productRepository.findByIdAndOwner(99L, owner)).thenReturn(Optional.empty());
         SaleRequest request = new SaleRequest(List.of(new SaleItemRequest(99L, new BigDecimal("1"))));
 
         assertThatThrownBy(() -> saleService.createSale(request))
@@ -116,7 +124,7 @@ class SaleServiceTest {
 
     @Test
     void createSaleChecksCumulativeStockAcrossDuplicateLines() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
         SaleRequest request = new SaleRequest(List.of(
                 new SaleItemRequest(1L, new BigDecimal("4")),
                 new SaleItemRequest(1L, new BigDecimal("7"))));
@@ -127,7 +135,7 @@ class SaleServiceTest {
 
     @Test
     void createSaleMergesDuplicateLinesAndRecordsOneMovement() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
         when(saleRepository.save(any(Sale.class))).thenAnswer(inv -> inv.getArgument(0));
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
@@ -150,9 +158,9 @@ class SaleServiceTest {
     void getSaleReturnsExistingSale() {
         SaleItem item = new SaleItem(product, new BigDecimal("2"),
                 new BigDecimal("25.00"), new BigDecimal("20.00"));
-        Sale sale = new Sale(List.of(item), new BigDecimal("50.00"));
+        Sale sale = new Sale(owner, List.of(item), new BigDecimal("50.00"));
         ReflectionTestUtils.setField(sale, "id", 3L);
-        when(saleRepository.findById(3L)).thenReturn(Optional.of(sale));
+        when(saleRepository.findByIdAndOwner(3L, owner)).thenReturn(Optional.of(sale));
 
         SaleResponse response = saleService.getSale(3L);
 
@@ -163,7 +171,7 @@ class SaleServiceTest {
 
     @Test
     void getSaleThrowsWhenMissing() {
-        when(saleRepository.findById(9L)).thenReturn(Optional.empty());
+        when(saleRepository.findByIdAndOwner(9L, owner)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> saleService.getSale(9L))
                 .isInstanceOf(ResourceNotFoundException.class);
@@ -173,10 +181,10 @@ class SaleServiceTest {
     void listSalesReturnsSummaries() {
         SaleItem item = new SaleItem(product, new BigDecimal("1"),
                 new BigDecimal("25.00"), new BigDecimal("20.00"));
-        Sale sale = new Sale(List.of(item), new BigDecimal("25.00"));
+        Sale sale = new Sale(owner, List.of(item), new BigDecimal("25.00"));
         ReflectionTestUtils.setField(sale, "id", 4L);
         Pageable pageable = PageRequest.of(0, 20);
-        when(saleRepository.findAll(pageable))
+        when(saleRepository.findByOwner(owner, pageable))
                 .thenReturn(new PageImpl<>(List.of(sale), pageable, 1));
 
         Page<SaleSummaryResponse> page = saleService.listSales(pageable);

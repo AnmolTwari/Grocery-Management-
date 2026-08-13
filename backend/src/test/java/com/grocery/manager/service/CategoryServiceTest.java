@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,8 +19,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 import com.grocery.manager.dto.category.CategoryRequest;
 import com.grocery.manager.dto.category.CategoryResponse;
 import com.grocery.manager.entity.Category;
+import com.grocery.manager.entity.User;
 import com.grocery.manager.exception.DuplicateResourceException;
 import com.grocery.manager.repository.CategoryRepository;
+import com.grocery.manager.security.CurrentUserService;
 
 @ExtendWith(MockitoExtension.class)
 class CategoryServiceTest {
@@ -27,12 +30,23 @@ class CategoryServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private CurrentUserService currentUserService;
+
     @InjectMocks
     private CategoryService categoryService;
 
+    private User owner;
+
+    @BeforeEach
+    void setUp() {
+        owner = User.builder().username("owner").build();
+        when(currentUserService.currentUser()).thenReturn(owner);
+    }
+
     @Test
     void createCategorySavesAndReturnsResponse() {
-        when(categoryRepository.existsByNameIgnoreCase("dairy")).thenReturn(false);
+        when(categoryRepository.existsByOwnerAndNameIgnoreCase(owner, "dairy")).thenReturn(false);
         when(categoryRepository.save(any(Category.class))).thenAnswer(inv -> inv.getArgument(0));
 
         CategoryResponse response = categoryService.createCategory(new CategoryRequest("dairy"));
@@ -43,7 +57,7 @@ class CategoryServiceTest {
 
     @Test
     void createCategoryRejectsDuplicateName() {
-        when(categoryRepository.existsByNameIgnoreCase("dairy")).thenReturn(true);
+        when(categoryRepository.existsByOwnerAndNameIgnoreCase(owner, "dairy")).thenReturn(true);
 
         assertThatThrownBy(() -> categoryService.createCategory(new CategoryRequest("dairy")))
                 .isInstanceOf(DuplicateResourceException.class);
@@ -51,9 +65,9 @@ class CategoryServiceTest {
 
     @Test
     void listCategoriesReturnsSortedCategories() {
-        Category dairy = new Category("Dairy");
+        Category dairy = new Category(owner, "Dairy");
         ReflectionTestUtils.setField(dairy, "id", 1L);
-        when(categoryRepository.findAllByOrderByNameAsc()).thenReturn(List.of(dairy));
+        when(categoryRepository.findByOwnerOrderByNameAsc(owner)).thenReturn(List.of(dairy));
 
         List<CategoryResponse> categories = categoryService.listCategories();
 

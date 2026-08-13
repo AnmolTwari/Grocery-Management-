@@ -19,16 +19,14 @@
 .brand {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-weight: 600;
-  font-size: 16px;
+  padding-bottom: var(--space-2);
 }
 
-.brand-mark {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
-  background: var(--color-primary);
+.brand-logo {
+  height: 72px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
   flex-shrink: 0;
 }
 
@@ -91,6 +89,12 @@
 .card p {
   margin-top: var(--space-2);
   color: var(--color-text-secondary);
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
 }
 
 /* ---- Responsive: compact nav on small screens ---- */
@@ -467,6 +471,34 @@
   margin-top: var(--space-6);
 }
 
+.field-error {
+  font-size: 13px;
+  color: var(--color-danger);
+}
+
+.input-static {
+  padding: var(--space-2) 0;
+  color: var(--color-text);
+}
+
+.report-range {
+  display: flex;
+  gap: var(--space-4);
+  max-width: 480px;
+}
+
+.report-range .field {
+  flex: 1;
+}
+
+.toggle-password {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  padding-top: var(--space-2);
+}
+
 /* ---- Pagination ---- */
 .pagination {
   display: flex;
@@ -511,4 +543,65 @@ a.nav-link.active {
   .page-title {
     font-size: 20px;
   }
+}
+
+/* ---- Dashboard ---- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.stat-card {
+  max-width: none;
+  padding: var(--space-4);
+}
+
+.stat-value {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--color-text);
+}
+
+.stat-label {
+  margin-top: var(--space-1);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.stat-card.stat-warn .stat-value {
+  color: #92400e;
+}
+
+.stat-card.stat-alarm .stat-value {
+  color: #991b1b;
+}
+
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.card-wide {
+  max-width: none;
+}
+
+.section-title {
+  margin: 0 0 var(--space-4);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.link:hover {
+  text-decoration: underline;
 }

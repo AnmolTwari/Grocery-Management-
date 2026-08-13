@@ -13,9 +13,11 @@ import com.grocery.manager.dto.inventory.StockMovementResponse;
 import com.grocery.manager.entity.MovementType;
 import com.grocery.manager.entity.Product;
 import com.grocery.manager.entity.StockMovement;
+import com.grocery.manager.entity.User;
 import com.grocery.manager.exception.ResourceNotFoundException;
 import com.grocery.manager.repository.ProductRepository;
 import com.grocery.manager.repository.StockMovementRepository;
+import com.grocery.manager.security.CurrentUserService;
 
 /**
  * Inventory business rules. Every stock change updates the product and
@@ -26,11 +28,14 @@ public class InventoryService {
 
     private final ProductRepository productRepository;
     private final StockMovementRepository stockMovementRepository;
+    private final CurrentUserService currentUserService;
 
     public InventoryService(ProductRepository productRepository,
-            StockMovementRepository stockMovementRepository) {
+            StockMovementRepository stockMovementRepository,
+            CurrentUserService currentUserService) {
         this.productRepository = productRepository;
         this.stockMovementRepository = stockMovementRepository;
+        this.currentUserService = currentUserService;
     }
 
     /** Adds stock to a product and records the change. */
@@ -58,9 +63,11 @@ public class InventoryService {
 
     @Transactional(readOnly = true)
     public Page<StockMovementResponse> listMovements(Long productId, Pageable pageable) {
+        User owner = currentUserService.currentUser();
         Page<StockMovement> page = productId == null
-                ? stockMovementRepository.findAll(pageable)
-                : stockMovementRepository.findByProductId(productId, pageable);
+                ? stockMovementRepository.findByProduct_Owner(owner, pageable)
+                : stockMovementRepository.findByProduct_OwnerAndProductId(owner, productId,
+                        pageable);
         return page.map(StockMovementResponse::from);
     }
 
@@ -71,7 +78,7 @@ public class InventoryService {
     }
 
     private Product findProduct(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByIdAndOwner(id, currentUserService.currentUser())
                 .orElseThrow(() -> new ResourceNotFoundException("PRODUCT_NOT_FOUND",
                         "Product not found with id " + id));
     }

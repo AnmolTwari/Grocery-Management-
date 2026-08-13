@@ -30,9 +30,11 @@ import com.grocery.manager.entity.MovementType;
 import com.grocery.manager.entity.Product;
 import com.grocery.manager.entity.StockMovement;
 import com.grocery.manager.entity.Unit;
+import com.grocery.manager.entity.User;
 import com.grocery.manager.exception.ResourceNotFoundException;
 import com.grocery.manager.repository.ProductRepository;
 import com.grocery.manager.repository.StockMovementRepository;
+import com.grocery.manager.security.CurrentUserService;
 
 @ExtendWith(MockitoExtension.class)
 class InventoryServiceTest {
@@ -43,15 +45,21 @@ class InventoryServiceTest {
     @Mock
     private StockMovementRepository stockMovementRepository;
 
+    @Mock
+    private CurrentUserService currentUserService;
+
     @InjectMocks
     private InventoryService inventoryService;
 
+    private User owner;
     private Product product;
 
     @BeforeEach
     void setUp() {
-        Category category = new Category("Dairy");
-        product = new Product("Milk", category, "Amul", "MILK-1", Unit.PIECE,
+        owner = User.builder().username("owner").build();
+        when(currentUserService.currentUser()).thenReturn(owner);
+        Category category = new Category(owner, "Dairy");
+        product = new Product(owner, "Milk", category, "Amul", "MILK-1", Unit.PIECE,
                 new BigDecimal("20.00"), new BigDecimal("25.00"),
                 new BigDecimal("10"), new BigDecimal("5"), true);
         ReflectionTestUtils.setField(product, "id", 1L);
@@ -59,7 +67,7 @@ class InventoryServiceTest {
 
     @Test
     void stockInAddsQuantityAndRecordsMovement() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -77,7 +85,7 @@ class InventoryServiceTest {
 
     @Test
     void stockInThrowsWhenProductMissing() {
-        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+        when(productRepository.findByIdAndOwner(99L, owner)).thenReturn(Optional.empty());
 
         assertThatThrownBy(
                 () -> inventoryService.stockIn(new StockInRequest(99L, new BigDecimal("5"), null)))
@@ -86,7 +94,7 @@ class InventoryServiceTest {
 
     @Test
     void adjustSetsNewQuantityAndRecordsDelta() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
         when(stockMovementRepository.save(any(StockMovement.class)))
                 .thenAnswer(inv -> inv.getArgument(0));
 
@@ -102,7 +110,7 @@ class InventoryServiceTest {
 
     @Test
     void adjustThrowsWhenProductMissing() {
-        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+        when(productRepository.findByIdAndOwner(99L, owner)).thenReturn(Optional.empty());
 
         assertThatThrownBy(
                 () -> inventoryService.adjust(new AdjustmentRequest(99L, new BigDecimal("0"), null)))
@@ -114,14 +122,14 @@ class InventoryServiceTest {
         Pageable pageable = PageRequest.of(0, 20);
         StockMovement movement = new StockMovement(product, MovementType.STOCK_IN,
                 new BigDecimal("10"), new BigDecimal("5"), new BigDecimal("15"), "Purchase");
-        when(stockMovementRepository.findAll(pageable))
+        when(stockMovementRepository.findByProduct_Owner(owner, pageable))
                 .thenReturn(new PageImpl<>(List.of(movement), pageable, 1));
 
         Page<StockMovementResponse> page = inventoryService.listMovements(null, pageable);
 
         assertThat(page.getTotalElements()).isEqualTo(1);
         assertThat(page.getContent().getFirst().newQuantity()).isEqualByComparingTo("15");
-        verify(stockMovementRepository).findAll(pageable);
+        verify(stockMovementRepository).findByProduct_Owner(owner, pageable);
     }
 
     @Test
@@ -129,13 +137,13 @@ class InventoryServiceTest {
         Pageable pageable = PageRequest.of(0, 20);
         StockMovement movement = new StockMovement(product, MovementType.ADJUSTMENT,
                 new BigDecimal("10"), new BigDecimal("-2"), new BigDecimal("8"), "Damaged");
-        when(stockMovementRepository.findByProductId(1L, pageable))
+        when(stockMovementRepository.findByProduct_OwnerAndProductId(owner, 1L, pageable))
                 .thenReturn(new PageImpl<>(List.of(movement), pageable, 1));
 
         Page<StockMovementResponse> page = inventoryService.listMovements(1L, pageable);
 
         assertThat(page.getTotalElements()).isEqualTo(1);
         assertThat(page.getContent().getFirst().type()).isEqualTo(MovementType.ADJUSTMENT);
-        verify(stockMovementRepository).findByProductId(1L, pageable);
+        verify(stockMovementRepository).findByProduct_OwnerAndProductId(owner, 1L, pageable);
     }
 }

@@ -14,6 +14,8 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
@@ -29,6 +31,10 @@ public class Sale {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true,
             fetch = FetchType.LAZY)
     private List<SaleItem> items = new ArrayList<>();
@@ -43,7 +49,8 @@ public class Sale {
         // Required by JPA.
     }
 
-    public Sale(List<SaleItem> items, BigDecimal totalAmount) {
+    public Sale(User owner, List<SaleItem> items, BigDecimal totalAmount) {
+        this.owner = owner;
         this.totalAmount = totalAmount;
         for (SaleItem item : items) {
             addItem(item);
@@ -62,6 +69,10 @@ public class Sale {
 
     public Long getId() {
         return id;
+    }
+
+    public User getOwner() {
+        return owner;
     }
 
     public List<SaleItem> getItems() {

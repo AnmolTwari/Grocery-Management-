@@ -3,6 +3,7 @@ package com.grocery.manager.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -16,6 +17,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -29,12 +32,17 @@ import com.grocery.manager.entity.Category;
 import com.grocery.manager.entity.Product;
 import com.grocery.manager.entity.StockStatus;
 import com.grocery.manager.entity.Unit;
+import com.grocery.manager.entity.User;
 import com.grocery.manager.exception.DuplicateResourceException;
 import com.grocery.manager.exception.ResourceNotFoundException;
 import com.grocery.manager.repository.CategoryRepository;
 import com.grocery.manager.repository.ProductRepository;
+import com.grocery.manager.repository.SaleRepository;
+import com.grocery.manager.repository.StockMovementRepository;
+import com.grocery.manager.security.CurrentUserService;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class ProductServiceTest {
 
     @Mock
@@ -43,17 +51,29 @@ class ProductServiceTest {
     @Mock
     private CategoryRepository categoryRepository;
 
+    @Mock
+    private StockMovementRepository stockMovementRepository;
+
+    @Mock
+    private SaleRepository saleRepository;
+
+    @Mock
+    private CurrentUserService currentUserService;
+
     @InjectMocks
     private ProductService productService;
 
+    private User owner;
     private Category category;
     private Product product;
 
     @BeforeEach
     void setUp() {
-        category = new Category("Dairy");
+        owner = User.builder().username("owner").build();
+        when(currentUserService.currentUser()).thenReturn(owner);
+        category = new Category(owner, "Dairy");
         ReflectionTestUtils.setField(category, "id", 5L);
-        product = new Product("Milk", category, "Amul", "MILK-1", Unit.PIECE,
+        product = new Product(owner, "Milk", category, "Amul", "MILK-1", Unit.PIECE,
                 new BigDecimal("20.00"), new BigDecimal("25.00"),
                 new BigDecimal("10"), new BigDecimal("5"), true);
         ReflectionTestUtils.setField(product, "id", 1L);
@@ -67,8 +87,8 @@ class ProductServiceTest {
 
     @Test
     void createProductSavesAndReturnsResponse() {
-        when(categoryRepository.findById(5L)).thenReturn(Optional.of(category));
-        when(productRepository.existsBySkuIgnoreCase("MILK-1")).thenReturn(false);
+        when(categoryRepository.findByIdAndOwner(5L, owner)).thenReturn(Optional.of(category));
+        when(productRepository.existsByOwnerAndSkuIgnoreCase(owner, "MILK-1")).thenReturn(false);
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ProductResponse response =
@@ -84,7 +104,7 @@ class ProductServiceTest {
 
     @Test
     void createProductRejectsDuplicateSku() {
-        when(productRepository.existsBySkuIgnoreCase("MILK-1")).thenReturn(true);
+        when(productRepository.existsByOwnerAndSkuIgnoreCase(owner, "MILK-1")).thenReturn(true);
 
         assertThatThrownBy(
                 () -> productService.createProduct(request("Milk", "MILK-1", null, null)))
@@ -93,8 +113,8 @@ class ProductServiceTest {
 
     @Test
     void createProductDefaultsMissingQuantityToZero() {
-        when(categoryRepository.findById(5L)).thenReturn(Optional.of(category));
-        when(productRepository.existsBySkuIgnoreCase("MILK-1")).thenReturn(false);
+        when(categoryRepository.findByIdAndOwner(5L, owner)).thenReturn(Optional.of(category));
+        when(productRepository.existsByOwnerAndSkuIgnoreCase(owner, "MILK-1")).thenReturn(false);
         when(productRepository.save(any(Product.class))).thenAnswer(inv -> inv.getArgument(0));
 
         ProductResponse response =
@@ -106,9 +126,10 @@ class ProductServiceTest {
 
     @Test
     void updateProductUpdatesFields() {
-        when(categoryRepository.findById(5L)).thenReturn(Optional.of(category));
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
-        when(productRepository.existsBySkuIgnoreCaseAndIdNot("MILK-2", 1L)).thenReturn(false);
+        when(categoryRepository.findByIdAndOwner(5L, owner)).thenReturn(Optional.of(category));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
+        when(productRepository.existsByOwnerAndSkuIgnoreCaseAndIdNot(owner, "MILK-2", 1L))
+                .thenReturn(false);
 
         ProductResponse response = productService.updateProduct(1L,
                 request("Full Cream Milk", "MILK-2", new BigDecimal("2"),
@@ -121,7 +142,7 @@ class ProductServiceTest {
 
     @Test
     void getProductReturnsExistingProduct() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
 
         ProductResponse response = productService.getProduct(1L);
 
@@ -131,19 +152,34 @@ class ProductServiceTest {
 
     @Test
     void getProductThrowsWhenMissing() {
-        when(productRepository.findById(99L)).thenReturn(Optional.empty());
+        when(productRepository.findByIdAndOwner(99L, owner)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> productService.getProduct(99L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    void deactivateProductMarksItInactive() {
-        when(productRepository.findById(1L)).thenReturn(Optional.of(product));
+    void deleteProductRemovesRowWhenUnreferenced() {
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
+        when(stockMovementRepository.existsByProduct_OwnerAndProductId(owner, 1L))
+                .thenReturn(false);
+        when(saleRepository.existsByOwnerAndItems_Product_Id(owner, 1L)).thenReturn(false);
 
-        productService.deactivateProduct(1L);
+        productService.deleteProduct(1L);
+
+        verify(productRepository).delete(product);
+    }
+
+    @Test
+    void deleteProductDeactivatesWhenItHasHistory() {
+        when(productRepository.findByIdAndOwner(1L, owner)).thenReturn(Optional.of(product));
+        when(stockMovementRepository.existsByProduct_OwnerAndProductId(owner, 1L))
+                .thenReturn(true);
+
+        productService.deleteProduct(1L);
 
         assertThat(product.isActive()).isFalse();
+        verify(productRepository, never()).delete(any(Product.class));
     }
 
     @Test
@@ -170,7 +206,7 @@ class ProductServiceTest {
     }
 
     private Product productWithStock(BigDecimal qty, BigDecimal min) {
-        return new Product("X", category, null, null, Unit.PIECE,
+        return new Product(owner, "X", category, null, null, Unit.PIECE,
                 BigDecimal.ONE, BigDecimal.ONE, qty, min, true);
     }
 }

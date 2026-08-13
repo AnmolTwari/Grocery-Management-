@@ -68,11 +68,14 @@ public class ProductController {
         return productService.updateProduct(id, request);
     }
 
-    /** Deletes (deactivates) a product. Historical data is preserved. */
+    /**
+     * Removes a product: hard-deletes it when it has no sale/stock
+     * history, otherwise deactivates it so historical records survive.
+     */
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {
-        productService.deactivateProduct(id);
+        productService.deleteProduct(id);
     }
 
     private Pageable toPageable(int page, int size, String sort) {

@@ -7,6 +7,7 @@
 
 # ---- Java / Maven (backend) ----
 backend/target/
+backend/data/
 backend/.mvn/wrapper/maven-wrapper.jar
 *.class
 *.jar
@@ -31,6 +32,9 @@ Thumbs.db
 
 # ---- Local tooling ----
 .claude/
+
+# ---- Docs (kept local only, not in the repository) ----
+Grocery-Shop-Management-System-Docs/
 
 # ---- OS / Misc ----
 *.log
