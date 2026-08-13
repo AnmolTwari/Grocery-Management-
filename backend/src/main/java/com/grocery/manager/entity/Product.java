@@ -18,7 +18,7 @@ import jakarta.persistence.Table;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-/** A grocery product sold by the shop. Owned by a shop owner. */
+
 @Entity
 @Table(name = "products", indexes = {
         @Index(name = "idx_product_name", columnList = "name"),
@@ -45,7 +45,7 @@ public class Product {
     @Column(length = 100)
     private String brand;
 
-    /** Optional SKU/code. Unique when present. */
+
     @Column(length = 50)
     private String sku;
 
@@ -59,7 +59,7 @@ public class Product {
     @Column(name = "selling_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal sellingPrice;
 
-    /** Money values use BigDecimal (never floating point). */
+
     @Column(name = "current_quantity", nullable = false, precision = 12, scale = 3)
     private BigDecimal currentQuantity;
 
@@ -76,7 +76,7 @@ public class Product {
     private LocalDateTime updatedAt;
 
     protected Product() {
-        // Required by JPA.
+
     }
 
     public Product(User owner, String name, Category category, String brand, String sku, Unit unit,
@@ -106,7 +106,7 @@ public class Product {
         this.updatedAt = LocalDateTime.now();
     }
 
-    /** Derives stock status from quantity and the minimum stock level. */
+
     public StockStatus stockStatus() {
         if (currentQuantity.compareTo(BigDecimal.ZERO) <= 0) {
             return StockStatus.OUT_OF_STOCK;

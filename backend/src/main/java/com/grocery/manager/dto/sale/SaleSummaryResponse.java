@@ -5,7 +5,7 @@ import java.time.LocalDateTime;
 
 import com.grocery.manager.entity.Sale;
 
-/** Lightweight sale row for history lists (no line items). */
+
 public record SaleSummaryResponse(
         Long id,
         int itemCount,

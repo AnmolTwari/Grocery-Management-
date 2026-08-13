@@ -13,7 +13,7 @@ import com.grocery.manager.entity.User;
 import com.grocery.manager.repository.SaleRepository;
 import com.grocery.manager.security.CurrentUserService;
 
-/** Read-only aggregates for reports over a date range. */
+
 @Service
 public class ReportService {
 

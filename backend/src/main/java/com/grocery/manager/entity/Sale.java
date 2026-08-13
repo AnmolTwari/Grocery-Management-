@@ -20,7 +20,7 @@ import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
-/** A completed shop sale. Contains line items and the charged total. */
+
 @Entity
 @Table(name = "sales", indexes = {
         @Index(name = "idx_sale_created", columnList = "created_at")
@@ -46,7 +46,7 @@ public class Sale {
     private LocalDateTime createdAt;
 
     protected Sale() {
-        // Required by JPA.
+
     }
 
     public Sale(User owner, List<SaleItem> items, BigDecimal totalAmount) {

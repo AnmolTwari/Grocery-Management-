@@ -11,7 +11,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 
-/** A product category, e.g. "Vegetables", "Dairy", "Snacks". Owned by a shop. */
+
 @Entity
 @Table(name = "categories", uniqueConstraints = {
         @UniqueConstraint(name = "uk_category_owner_name", columnNames = { "owner_id", "name" })
@@ -30,7 +30,7 @@ public class Category {
     private String name;
 
     protected Category() {
-        // Required by JPA.
+
     }
 
     public Category(User owner, String name) {

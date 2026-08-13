@@ -26,7 +26,7 @@ import com.grocery.manager.service.InventoryService;
 @RequestMapping("/api/inventory")
 public class InventoryController {
 
-    /** Movement fields that may be used for sorting. */
+
     private static final Set<String> SORTABLE_FIELDS =
             Set.of("id", "createdAt", "quantityChanged", "newQuantity");
 

@@ -29,7 +29,7 @@ import com.grocery.manager.service.ProductService;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    /** Product fields that may be used for sorting. */
+
     private static final Set<String> SORTABLE_FIELDS =
             Set.of("id", "name", "sku", "purchasePrice", "sellingPrice", "currentQuantity",
                     "minimumStockLevel", "createdAt");
@@ -68,10 +68,7 @@ public class ProductController {
         return productService.updateProduct(id, request);
     }
 
-    /**
-     * Removes a product: hard-deletes it when it has no sale/stock
-     * history, otherwise deactivates it so historical records survive.
-     */
+
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteProduct(@PathVariable Long id) {

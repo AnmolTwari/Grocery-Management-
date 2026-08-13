@@ -27,7 +27,7 @@ import com.grocery.manager.service.SaleService;
 @RequestMapping("/api/sales")
 public class SaleController {
 
-    /** Sale fields that may be used for sorting. */
+
     private static final Set<String> SORTABLE_FIELDS = Set.of("id", "totalAmount", "createdAt");
 
     private final SaleService saleService;

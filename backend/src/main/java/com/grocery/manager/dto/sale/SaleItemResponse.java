@@ -7,7 +7,7 @@ import com.grocery.manager.entity.Product;
 import com.grocery.manager.entity.SaleItem;
 import com.grocery.manager.entity.Unit;
 
-/** A single line of a completed sale. */
+
 public record SaleItemResponse(
         Long productId,
         String productName,

@@ -13,10 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-/**
- * A line inside a sale. Prices are snapshotted at sale time so later
- * price changes on the product do not change historical records.
- */
+
 @Entity
 @Table(name = "sale_items", indexes = {
         @Index(name = "idx_sale_item_sale", columnList = "sale_id"),
@@ -39,16 +36,16 @@ public class SaleItem {
     @Column(nullable = false, precision = 12, scale = 3)
     private BigDecimal quantity;
 
-    /** Selling price charged at the time of sale. */
+
     @Column(name = "unit_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal unitPrice;
 
-    /** Purchase price snapshot, used for estimated profit. */
+
     @Column(name = "purchase_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal purchasePrice;
 
     protected SaleItem() {
-        // Required by JPA.
+
     }
 
     public SaleItem(Product product, BigDecimal quantity, BigDecimal unitPrice,

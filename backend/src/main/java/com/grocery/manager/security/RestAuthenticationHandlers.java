@@ -12,11 +12,7 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-/**
- * Returns the consistent {@code ApiError}-shaped JSON body for
- * unauthenticated (401) and forbidden (403) requests instead of Spring
- * Security's empty default responses.
- */
+
 @Component
 public class RestAuthenticationHandlers implements AuthenticationEntryPoint, AccessDeniedHandler {
 

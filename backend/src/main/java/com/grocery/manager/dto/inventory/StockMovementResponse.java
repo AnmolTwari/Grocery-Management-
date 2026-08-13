@@ -8,7 +8,7 @@ import com.grocery.manager.entity.Product;
 import com.grocery.manager.entity.StockMovement;
 import com.grocery.manager.entity.Unit;
 
-/** API representation of a stock movement. */
+
 public record StockMovementResponse(
         Long id,
         Long productId,

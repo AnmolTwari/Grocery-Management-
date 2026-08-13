@@ -17,10 +17,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
-/**
- * An audited stock change for a product. Records the previous/new
- * quantity so every meaningful stock change is traceable.
- */
+
 @Entity
 @Table(name = "stock_movements", indexes = {
         @Index(name = "idx_stock_move_product", columnList = "product_id"),
@@ -40,15 +37,15 @@ public class StockMovement {
     @Column(nullable = false, length = 20)
     private MovementType type;
 
-    /** Stock before this change. */
+
     @Column(name = "previous_quantity", nullable = false, precision = 12, scale = 3)
     private BigDecimal previousQuantity;
 
-    /** Signed change; negative when stock was reduced. */
+
     @Column(name = "quantity_changed", nullable = false, precision = 12, scale = 3)
     private BigDecimal quantityChanged;
 
-    /** Stock after this change. */
+
     @Column(name = "new_quantity", nullable = false, precision = 12, scale = 3)
     private BigDecimal newQuantity;
 
@@ -59,7 +56,7 @@ public class StockMovement {
     private LocalDateTime createdAt;
 
     protected StockMovement() {
-        // Required by JPA.
+
     }
 
     public StockMovement(Product product, MovementType type, BigDecimal previousQuantity,

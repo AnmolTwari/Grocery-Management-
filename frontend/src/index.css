@@ -1,11 +1,11 @@
-/* Grocery Manager - design tokens */
+
 :root {
-  /* Primary */
+
   --color-primary: #16a34a;
   --color-primary-hover: #15803d;
   --color-primary-light: #dcfce7;
 
-  /* Neutral */
+
   --color-bg: #f8fafc;
   --color-surface: #ffffff;
   --color-border: #e2e8f0;
@@ -13,13 +13,13 @@
   --color-text-secondary: #64748b;
   --color-muted: #94a3b8;
 
-  /* Semantic */
+
   --color-success: #16a34a;
   --color-warning: #f59e0b;
   --color-danger: #dc2626;
   --color-info: #2563eb;
 
-  /* Spacing (multiples of 4px) */
+
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -30,11 +30,11 @@
   --space-10: 40px;
   --space-12: 48px;
 
-  /* Typography */
+
   --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
     'Segoe UI', sans-serif;
 
-  /* Layout */
+
   --sidebar-width: 232px;
   --radius: 8px;
   --radius-sm: 6px;

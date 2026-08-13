@@ -97,11 +97,7 @@ public class ProductService {
         return ProductResponse.from(product);
     }
 
-    /**
-     * Removes a product. When it has no sale/stock history the row is
-     * deleted outright; otherwise it is deactivated (hidden) so historical
-     * records stay intact.
-     */
+
     @Transactional
     public void deleteProduct(Long id) {
         User owner = currentUserService.currentUser();

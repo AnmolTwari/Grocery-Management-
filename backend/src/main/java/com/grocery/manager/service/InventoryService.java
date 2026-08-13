@@ -19,10 +19,7 @@ import com.grocery.manager.repository.ProductRepository;
 import com.grocery.manager.repository.StockMovementRepository;
 import com.grocery.manager.security.CurrentUserService;
 
-/**
- * Inventory business rules. Every stock change updates the product and
- * records a traceable StockMovement atomically.
- */
+
 @Service
 public class InventoryService {
 
@@ -38,7 +35,7 @@ public class InventoryService {
         this.currentUserService = currentUserService;
     }
 
-    /** Adds stock to a product and records the change. */
+
     @Transactional
     public StockMovementResponse stockIn(StockInRequest request) {
         Product product = findProduct(request.productId());
@@ -49,7 +46,7 @@ public class InventoryService {
                 previous, request.quantity(), updated, request.reason()));
     }
 
-    /** Corrects a product's stock to an absolute value and records the change. */
+
     @Transactional
     public StockMovementResponse adjust(AdjustmentRequest request) {
         Product product = findProduct(request.productId());

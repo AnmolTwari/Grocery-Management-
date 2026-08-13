@@ -35,7 +35,7 @@ export default function ProductListPage() {
         if (!cancelled) setCategories(data)
       })
       .catch(() => {
-        /* categories are non-critical for the list */
+
       })
     return () => {
       cancelled = true

@@ -3,7 +3,7 @@ package com.grocery.manager.dto.report;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-/** Sales and profit aggregates for a chosen date range. */
+
 public record ReportSummaryResponse(
         LocalDate from,
         LocalDate to,

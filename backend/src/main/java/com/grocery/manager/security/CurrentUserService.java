@@ -5,10 +5,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
-/**
- * Resolves the currently authenticated user. Every registered account is
- * the owner of their own shop, and all data access is scoped to it.
- */
+
 @Component
 public class CurrentUserService {
 

@@ -6,7 +6,7 @@ import java.util.List;
 
 import com.grocery.manager.entity.Sale;
 
-/** Full API representation of a sale, including its line items. */
+
 public record SaleResponse(
         Long id,
         BigDecimal totalAmount,

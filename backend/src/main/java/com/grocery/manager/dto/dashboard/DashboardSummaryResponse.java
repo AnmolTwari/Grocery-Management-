@@ -5,7 +5,7 @@ import java.util.List;
 
 import com.grocery.manager.dto.sale.SaleSummaryResponse;
 
-/** Aggregated shop status shown on the dashboard overview. */
+
 public record DashboardSummaryResponse(
         long salesToday,
         BigDecimal revenueToday,

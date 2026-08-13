@@ -18,7 +18,7 @@ import com.grocery.manager.repository.ProductRepository;
 import com.grocery.manager.repository.SaleRepository;
 import com.grocery.manager.security.CurrentUserService;
 
-/** Read-only aggregates for the dashboard overview. */
+
 @Service
 public class DashboardService {
 

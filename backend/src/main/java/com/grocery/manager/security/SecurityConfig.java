@@ -40,9 +40,9 @@ public class SecurityConfig {
                         .authenticationEntryPoint(restAuthenticationHandlers)
                         .accessDeniedHandler(restAuthenticationHandlers))
                 .authorizeHttpRequests(auth -> auth
-                        // Authentication is open: any shop owner can sign up.
+
                         .requestMatchers("/api/auth/**").permitAll()
-                        // Everything else requires a logged-in owner.
+
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

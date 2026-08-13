@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 
-/** A single line of a sale request: product + quantity. */
+
 public record SaleItemRequest(
         @NotNull(message = "Product is required")
         Long productId,

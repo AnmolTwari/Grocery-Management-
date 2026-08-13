@@ -6,7 +6,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
-/** Request body for adding stock to a product. */
+
 public record StockInRequest(
         @NotNull(message = "Product is required")
         Long productId,

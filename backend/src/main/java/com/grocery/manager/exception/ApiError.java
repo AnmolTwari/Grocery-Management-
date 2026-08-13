@@ -4,10 +4,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
 
-/**
- * Consistent error response body, matching the format described in the
- * architecture docs.
- */
+
 public record ApiError(String timestamp, int status, String error, String message, String path,
         Map<String, String> fieldErrors) {
 

@@ -8,7 +8,7 @@ import com.grocery.manager.entity.User;
 import com.grocery.manager.repository.UserRepository;
 import com.grocery.manager.security.CurrentUserService;
 
-/** Account management for the signed-in shop owner. */
+
 @Service
 public class SettingsService {
 

@@ -25,8 +25,8 @@ async function request(path, { method = 'GET', body, ...options } = {}) {
   })
 
   if (response.status === 401 && !path.startsWith('/auth/')) {
-    // Token expired or invalid - clear auth and redirect to login.
-    // /auth/* keeps showing its own error (e.g. wrong credentials).
+
+
     clearAuth()
     window.location.href = '/login'
     throw new Error('Session expired. Please log in again.')
@@ -52,7 +52,7 @@ async function buildError(response) {
       message = data.message
     }
   } catch {
-    // Response had no JSON body; keep the generic message.
+
   }
   const error = new Error(message)
   error.status = response.status

@@ -30,11 +30,7 @@ import com.grocery.manager.repository.SaleRepository;
 import com.grocery.manager.repository.StockMovementRepository;
 import com.grocery.manager.security.CurrentUserService;
 
-/**
- * Sales business rules. Creating a sale is one transaction: validate
- * availability, snapshot prices, calculate totals, create the sale and
- * line items, reduce stock and record movements — all-or-nothing.
- */
+
 @Service
 public class SaleService {
 

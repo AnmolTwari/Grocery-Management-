@@ -33,7 +33,7 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Every registered user is the owner of their own shop.
+
         return List.of(new SimpleGrantedAuthority("ROLE_OWNER"));
     }
 

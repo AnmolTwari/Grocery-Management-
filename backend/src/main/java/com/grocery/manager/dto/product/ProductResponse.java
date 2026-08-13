@@ -7,7 +7,7 @@ import com.grocery.manager.entity.Product;
 import com.grocery.manager.entity.StockStatus;
 import com.grocery.manager.entity.Unit;
 
-/** API representation of a product. */
+
 public record ProductResponse(
         Long id,
         String name,
