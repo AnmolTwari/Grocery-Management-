@@ -66,12 +66,6 @@
   flex-direction: column;
 }
 
-.topbar {
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
-  padding: var(--space-4) var(--space-6);
-}
-
 .content {
   padding: var(--space-6);
   flex: 1;

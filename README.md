@@ -9,7 +9,8 @@ A full-stack web application for small grocery shop owners to manage their busin
 
 - Open registration — every user is a shop owner; no roles to configure
 - Per-owner data isolation: each owner sees only their own categories, products, stock history, sales, and reports
-- JWT authentication (BCrypt-hashed passwords, stateless API)
+- Cookie-based JWT sessions: HttpOnly + SameSite cookies, CSRF-protected, BCrypt-hashed passwords, stateless API
+- Brute-force protection: rate limiting (429) on login, registration, and password change
 - Product management with categories, units, cost/selling price, and low-stock thresholds
 - Inventory tracking: stock-in, adjustments, automatic stock status (in stock / low / out)
 - Sales: multi-item checkout with stock deduction, per-sale totals and profit
@@ -52,11 +53,14 @@ frontend/   React SPA (pages, API service layer, routing, auth guard)
 
 ## API Overview
 
-Base URL: `http://localhost:8081/api` · Authenticated endpoints require `Authorization: Bearer <jwt>`.
+Base URL: `http://localhost:8081/api`.
+
+Auth is cookie-based: login sets an `HttpOnly` JWT cookie; state-changing requests must send the `X-XSRF-TOKEN` header (seeded from `GET /auth/csrf`). No token is stored in `localStorage`.
 
 | Area | Endpoints |
 |---|---|
-| Auth (public) | `POST /auth/register`, `POST /auth/login` |
+| Auth (public) | `GET /auth/csrf`, `POST /auth/register`, `POST /auth/login`, `POST /auth/logout` |
+| Auth (logged in) | `GET /auth/me` |
 | Dashboard | `GET /dashboard/summary` |
 | Categories | `GET/POST /categories` |
 | Products | `GET/POST /products`, `GET/PUT/DELETE /products/{id}` |
@@ -65,15 +69,22 @@ Base URL: `http://localhost:8081/api` · Authenticated endpoints require `Author
 | Reports | `GET /reports/summary?from=&to=` |
 | Settings | `POST /settings/password` |
 
-Errors are returned as consistent JSON: `{ status, message, timestamp }` — e.g. 400 (validation / insufficient stock), 401 (bad credentials), 404 (missing resource), 409 (duplicate).
+Errors are returned as consistent JSON: `{ status, message, timestamp }` — e.g. 400 (validation / insufficient stock), 401 (bad credentials), 403 (CSRF), 404 (missing resource), 409 (duplicate), 429 (rate limited).
 
 ## How Multi-Tenant Isolation Works
 
-Every table carries an `owner_id`. A JWT filter identifies the caller from their token, services scope every query by the current owner, and cross-owner lookups return 404 — so one shared database safely serves many independent shops.
+Every table carries an `owner_id`. A JWT filter identifies the caller from their session cookie, services scope every query by the current owner, and cross-owner lookups return 404 — so one shared database safely serves many independent shops.
+
+## Security Notes
+
+- Cookies are `HttpOnly` + `SameSite=Lax`; set `COOKIE_SECURE=true` in `backend/.env` when deploying behind HTTPS so the `Secure` flag is added.
+- Set a strong `JWT_SECRET` in `backend/.env` — the fallback is a dev-only default.
+- Rate limiting is in-memory (5 attempts / 15 minutes per user and IP for login, per IP for registration, per user for password changes) — swap in a Redis-backed limiter before running multiple server instances.
+- The API also accepts `Authorization: Bearer <token>` as a fallback for external API clients.
 
 ## Testing
 
-40 backend unit tests (services, controllers, auth) run on an in-memory H2 database — no live database needed:
+46 backend tests (services, controllers, security, rate limiting) run on an in-memory H2 database — no live database needed:
 
 ```
 cd backend
