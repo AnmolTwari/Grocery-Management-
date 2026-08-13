@@ -106,7 +106,26 @@
 }
 
 @media (max-width: 480px) {
+  .auth-shell {
+    padding: var(--space-4);
+    gap: var(--space-4);
+    padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  }
+
   .auth-card {
-    padding: var(--space-6);
+    padding: var(--space-5);
+  }
+
+  .auth-brand {
+    margin-bottom: var(--space-5);
+  }
+
+  .auth-brand .brand-logo {
+    width: 80px;
+    height: 80px;
+  }
+
+  .auth-submit {
+    min-height: 44px;
   }
 }
