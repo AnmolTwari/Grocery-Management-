@@ -32,26 +32,34 @@ public class SecurityConfig {
     private final RestAuthenticationHandlers restAuthenticationHandlers;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                        .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint(restAuthenticationHandlers)
-                        .accessDeniedHandler(restAuthenticationHandlers))
-                .authorizeHttpRequests(auth -> auth
+public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-                        .requestMatchers("/api/auth/**").permitAll()
+    CookieCsrfTokenRepository csrfTokenRepository =
+            CookieCsrfTokenRepository.withHttpOnlyFalse();
 
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+    csrfTokenRepository.setCookieCustomizer(cookie -> cookie
+            .sameSite("None")
+            .secure(true));
 
-        return http.build();
-    }
+    http
+            .csrf(csrf -> csrf
+                    .csrfTokenRepository(csrfTokenRepository)
+                    .csrfTokenRequestHandler(new CsrfTokenRequestAttributeHandler()))
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session -> session
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(exceptions -> exceptions
+                    .authenticationEntryPoint(restAuthenticationHandlers)
+                    .accessDeniedHandler(restAuthenticationHandlers))
+            .authorizeHttpRequests(auth -> auth
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .anyRequest().authenticated())
+            .addFilterBefore(
+                    jwtAuthenticationFilter,
+                    UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+}
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
