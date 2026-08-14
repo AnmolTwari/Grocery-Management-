@@ -23,7 +23,7 @@ public class AuthCookieService {
         return ResponseCookie.from(COOKIE_NAME, token)
                 .httpOnly(true)
                 .secure(secure)
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(Duration.ofMillis(expiration))
                 .build();
@@ -33,7 +33,7 @@ public class AuthCookieService {
         return ResponseCookie.from(COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(secure)
-                .sameSite("Lax")
+                .sameSite("None")
                 .path("/")
                 .maxAge(0)
                 .build();
