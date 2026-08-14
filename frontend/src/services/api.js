@@ -1,4 +1,4 @@
-const API_PREFIX = import.meta.env.VITE_API_URL || '/api'
+const API_PREFIX = '/api'
 const LOGGED_IN_KEY = 'logged_in'
 
 let csrfToken = null
