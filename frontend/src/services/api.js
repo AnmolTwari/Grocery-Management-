@@ -1,6 +1,8 @@
 const API_PREFIX = import.meta.env.VITE_API_URL || '/api'
 const LOGGED_IN_KEY = 'logged_in'
 
+let csrfToken = null
+
 function setLoggedIn() {
   localStorage.setItem(LOGGED_IN_KEY, '1')
 }
@@ -10,15 +12,20 @@ function clearLoggedIn() {
 }
 
 function getCsrfToken() {
-  const match = document.cookie.match(/(?:^|; )XSRF-TOKEN=([^;]*)/)
-  return match ? decodeURIComponent(match[1]) : null
+  return csrfToken
 }
 
 async function loadCsrf() {
-  const response = await fetch(`${API_PREFIX}/auth/csrf`, { credentials: 'include' })
+  const response = await fetch(`${API_PREFIX}/auth/csrf`, {
+    credentials: 'include',
+  })
+
   if (!response.ok) {
     throw new Error('Failed to initialize session')
   }
+
+  const data = await response.json()
+  csrfToken = data.token
 }
 
 async function request(path, { method = 'GET', body, retried = false, ...options } = {}) {
