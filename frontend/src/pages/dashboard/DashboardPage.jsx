@@ -7,8 +7,8 @@ const LOW_STOCK = 'Low Stock'
 const OUT_OF_STOCK = 'Out of Stock'
 
 function alarmClass(label) {
-  if (label === OUT_OF_STOCK) return 'stat-alarm'
-  if (label === LOW_STOCK) return 'stat-warn'
+  if (label === OUT_OF_STOCK) return 'text-[#991b1b]'
+  if (label === LOW_STOCK) return 'text-[#92400e]'
   return ''
 }
 
@@ -46,64 +46,98 @@ export default function DashboardPage() {
     : []
 
   return (
-    <div className="content">
-      <div className="page-header">
-        <h1 className="page-title">Dashboard</h1>
+    <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Dashboard</h1>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && (
+        <div className="rounded-sm border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-sm text-[#991b1b]">
+          {error}
+        </div>
+      )}
 
-      {loading && <p className="loading-text">Loading…</p>}
+      {loading && <p className="text-secondary">Loading…</p>}
 
       {summary && (
         <>
-          <div className="stats-grid">
+          <div className="grid grid-cols-2 gap-3 min-[481px]:grid-cols-[repeat(auto-fit,minmax(170px,1fr))] min-[481px]:gap-4">
             {tiles.map((tile) => (
-              <div className={`card stat-card ${alarmClass(tile.label)}`} key={tile.label}>
-                <div className="stat-value">{tile.value}</div>
-                <div className="stat-label">{tile.label}</div>
+              <div
+                className="rounded-lg border border-border bg-surface p-3 shadow-sm min-[481px]:p-4"
+                key={tile.label}
+              >
+                <div
+                  className={`text-[19px] leading-tight font-bold text-text min-[481px]:text-[22px] md:text-[26px] ${alarmClass(tile.label)}`}
+                >
+                  {tile.value}
+                </div>
+                <div className="mt-2 text-[13px] text-secondary">{tile.label}</div>
               </div>
             ))}
           </div>
 
-          <div className="quick-actions">
-            <Link to="/sales/new" className="btn btn-primary">
+          <div className="flex flex-wrap gap-2">
+            <Link
+              to="/sales/new"
+              className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+            >
               New Sale
             </Link>
-            <Link to="/products/new" className="btn btn-secondary">
+            <Link
+              to="/products/new"
+              className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+            >
               Add Product
             </Link>
-            <Link to="/inventory" className="btn btn-secondary">
+            <Link
+              to="/inventory"
+              className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+            >
               Stock In
             </Link>
           </div>
 
-          <div className="card card-wide">
-            <h2 className="section-title">Recent Sales</h2>
+          <div className="rounded-lg border border-border bg-surface p-4 shadow-sm md:p-6">
+            <h2 className="mb-4 text-base font-semibold">Recent Sales</h2>
             {summary.recentSales.length === 0 ? (
               <p>No sales recorded yet.</p>
             ) : (
-              <div className="table-wrap">
-                <table className="data-table">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
                   <thead>
                     <tr>
-                      <th>Sale</th>
-                      <th>Items</th>
-                      <th>Total</th>
-                      <th>Time</th>
+                      <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                        Sale
+                      </th>
+                      <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                        Items
+                      </th>
+                      <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                        Total
+                      </th>
+                      <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                        Time
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {summary.recentSales.map((sale) => (
                       <tr key={sale.id}>
-                        <td>
-                          <Link to={`/sales/${sale.id}`} className="link">
+                        <td className="border-b border-border p-3 text-left align-middle">
+                          <Link to={`/sales/${sale.id}`} className="font-semibold text-primary hover:underline">
                             Sale #{sale.id}
                           </Link>
                         </td>
-                        <td>{sale.itemCount}</td>
-                        <td>{formatCurrency(sale.totalAmount)}</td>
-                        <td>{formatDateTime(sale.createdAt)}</td>
+                        <td className="border-b border-border p-3 text-left align-middle">
+                          {sale.itemCount}
+                        </td>
+                        <td className="border-b border-border p-3 text-left align-middle">
+                          {formatCurrency(sale.totalAmount)}
+                        </td>
+                        <td className="border-b border-border p-3 text-left align-middle">
+                          {formatDateTime(sale.createdAt)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

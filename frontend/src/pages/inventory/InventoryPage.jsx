@@ -125,40 +125,52 @@ export default function InventoryPage() {
   const isEmpty = movements && movements.content.length === 0
 
   return (
-    <div className="content">
-      <div className="page-header">
-        <h1 className="page-title">Inventory</h1>
+    <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Inventory</h1>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
-      {success && !error && <div className="alert alert-success">{success}</div>}
+      {error && (
+        <div className="rounded-sm border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-sm text-[#991b1b]">
+          {error}
+        </div>
+      )}
+      {success && !error && (
+        <div className="rounded-sm border border-[#bbf7d0] bg-primary-light px-4 py-3 text-sm text-[#166534]">
+          {success}
+        </div>
+      )}
 
-      <div className="segmented" role="tablist" aria-label="Stock operation">
+      <div
+        className="flex w-full overflow-hidden rounded-sm border border-border md:w-auto"
+        role="tablist"
+        aria-label="Stock operation"
+      >
         <button
           type="button"
-          className={`seg-btn${mode === 'STOCK_IN' ? ' active' : ''}`}
+          className={`min-h-10 flex-1 cursor-pointer border-none bg-surface px-4 py-2 text-sm font-semibold transition-colors hover:bg-bg md:min-h-0 md:flex-none ${mode === 'STOCK_IN' ? 'bg-primary text-white' : 'text-secondary'}`}
           onClick={() => switchMode('STOCK_IN')}
         >
           ＋ Stock In
         </button>
         <button
           type="button"
-          className={`seg-btn${mode === 'ADJUSTMENT' ? ' active' : ''}`}
+          className={`min-h-10 flex-1 cursor-pointer border-none bg-surface px-4 py-2 text-sm font-semibold transition-colors hover:bg-bg md:min-h-0 md:flex-none ${mode === 'ADJUSTMENT' ? 'bg-primary text-white' : 'text-secondary'}`}
           onClick={() => switchMode('ADJUSTMENT')}
         >
           Adjust Stock
         </button>
       </div>
 
-      <form className="card form" onSubmit={handleSubmit}>
-        <div className="form-grid">
-          <div className="field">
-            <label className="label" htmlFor="inventory-product">
+      <form className="max-w-[720px] rounded-lg border border-border bg-surface p-4 shadow-sm md:p-6" onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="inventory-product">
               Product *
             </label>
             <select
               id="inventory-product"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               value={form.productId}
               onChange={setField('productId')}
             >
@@ -172,13 +184,13 @@ export default function InventoryPage() {
             </select>
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="inventory-quantity">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="inventory-quantity">
               {mode === 'STOCK_IN' ? 'Quantity to add *' : 'New quantity *'}
             </label>
             <input
               id="inventory-quantity"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
               min={mode === 'STOCK_IN' ? '0.001' : '0'}
               step="any"
@@ -187,19 +199,19 @@ export default function InventoryPage() {
               required
             />
             {selectedProduct && (
-              <small className="field-hint">
+              <small className="text-[11px] text-secondary min-[481px]:text-xs">
                 Current stock: {quantityLabel(selectedProduct)}
               </small>
             )}
           </div>
 
-          <div className="field field-full">
-            <label className="label" htmlFor="inventory-reason">
+          <div className="col-span-full flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="inventory-reason">
               Reason
             </label>
             <input
               id="inventory-reason"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               placeholder="e.g. Purchase, damaged items"
               value={form.reason}
               onChange={setField('reason')}
@@ -208,18 +220,22 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        <div className="form-actions">
-          <button type="submit" className="btn btn-primary" disabled={submitting}>
+        <div className="mt-6 flex flex-col-reverse gap-2 md:flex-row md:justify-end">
+          <button
+            type="submit"
+            className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0 md:w-auto"
+            disabled={submitting}
+          >
             {submitting ? 'Saving…' : mode === 'STOCK_IN' ? 'Add Stock' : 'Save Adjustment'}
           </button>
         </div>
       </form>
 
-      <h2 className="section-title">Movement history</h2>
+      <h2 className="m-0 text-base font-semibold">Movement history</h2>
 
-      <div className="toolbar">
+      <div className="flex flex-col gap-2 min-[481px]:flex-row min-[481px]:flex-wrap">
         <select
-          className="input"
+          className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary min-[481px]:min-w-40 min-[481px]:flex-1"
           value={filterProductId}
           onChange={(event) => {
             setPage(0)
@@ -236,51 +252,77 @@ export default function InventoryPage() {
       </div>
 
       {isEmpty && !loading && (
-        <div className="card empty-state">
+        <div className="rounded-lg border border-border bg-surface p-8 text-center text-secondary shadow-sm">
           <p>No stock movements yet. Use a form above to add or adjust stock.</p>
         </div>
       )}
 
       {movements && !isEmpty && (
         <>
-          <div className="table-wrap">
-            <table className="data-table">
+          <div className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
+            <table className="w-full min-w-[600px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
               <thead>
                 <tr>
-                  <th>Date &amp; Time</th>
-                  <th>Product</th>
-                  <th>Type</th>
-                  <th>Previous</th>
-                  <th>Change</th>
-                  <th>New Stock</th>
-                  <th>Reason</th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    Date &amp; Time
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    Product
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    Type
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    Previous
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    Change
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    New Stock
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    Reason
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {movements.content.map((movement) => (
                   <tr key={movement.id}>
-                    <td>{formatDateTime(movement.createdAt)}</td>
-                    <td>
-                      <div className="product-name">{movement.productName}</div>
+                    <td className="border-b border-border p-3 text-left align-middle">
+                      {formatDateTime(movement.createdAt)}
+                    </td>
+                    <td className="border-b border-border p-3 text-left align-middle">
+                      <div className="font-semibold">{movement.productName}</div>
                       {movement.productSku && (
-                        <div className="product-brand">{movement.productSku}</div>
+                        <div className="text-xs text-secondary">{movement.productSku}</div>
                       )}
                     </td>
-                    <td>
-                      <span className={`badge badge-${String(movement.type).toLowerCase()}`}>
+                    <td className="border-b border-border p-3 text-left align-middle">
+                      <span
+                        className={`inline-block rounded-full px-2 py-0.5 text-xs font-semibold whitespace-nowrap ${
+                          movement.type === 'STOCK_IN'
+                            ? 'bg-primary-light text-[#166534]'
+                            : movement.type === 'ADJUSTMENT'
+                              ? 'bg-[#e0f2fe] text-[#075985]'
+                              : 'bg-[#ede9fe] text-[#5b21b6]'
+                        }`}
+                      >
                         {MOVEMENT_TYPE_LABELS[movement.type] ?? movement.type}
                       </span>
                     </td>
-                    <td>
+                    <td className="border-b border-border p-3 text-left align-middle">
                       {movement.previousQuantity} {UNIT_LABELS[movement.unit] ?? movement.unit}
                     </td>
-                    <td>
+                    <td className="border-b border-border p-3 text-left align-middle">
                       <ChangeCell value={movement.quantityChanged} unit={UNIT_LABELS[movement.unit] ?? movement.unit} />
                     </td>
-                    <td>
+                    <td className="border-b border-border p-3 text-left align-middle">
                       {movement.newQuantity} {UNIT_LABELS[movement.unit] ?? movement.unit}
                     </td>
-                    <td>{movement.reason}</td>
+                    <td className="border-b border-border p-3 text-left align-middle">
+                      {movement.reason}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -288,21 +330,21 @@ export default function InventoryPage() {
           </div>
 
           {movements.totalPages > 1 && (
-            <div className="pagination">
+            <div className="flex items-center justify-center gap-3">
               <button
                 type="button"
-                className="btn btn-secondary btn-sm"
+                className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
                 disabled={movements.first}
                 onClick={() => setPage(page - 1)}
               >
                 Prev
               </button>
-              <span className="pagination-info">
+              <span className="text-sm text-secondary">
                 Page {movements.number + 1} of {movements.totalPages}
               </span>
               <button
                 type="button"
-                className="btn btn-secondary btn-sm"
+                className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
                 disabled={movements.last}
                 onClick={() => setPage(page + 1)}
               >
@@ -313,7 +355,7 @@ export default function InventoryPage() {
         </>
       )}
 
-      {loading && <p className="loading-text">Loading…</p>}
+      {loading && <p className="text-secondary">Loading…</p>}
     </div>
   )
 }
@@ -322,7 +364,7 @@ function ChangeCell({ value, unit }) {
   if (value === null || value === undefined) return null
   const numeric = Number(value)
   const className =
-    numeric > 0 ? 'change-positive' : numeric < 0 ? 'change-negative' : 'change-zero'
+    numeric > 0 ? 'font-semibold text-[#166534]' : numeric < 0 ? 'font-semibold text-[#991b1b]' : 'text-muted'
   const prefix = numeric > 0 ? '+' : numeric < 0 ? '−' : ''
   return (
     <span className={className}>

@@ -122,29 +122,38 @@ export default function ProductFormPage() {
 
   if (loading) {
     return (
-      <div className="content">
-        <p className="loading-text">Loading…</p>
+      <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
+        <p className="text-secondary">Loading…</p>
       </div>
     )
   }
 
   return (
-    <div className="content">
-      <div className="page-header">
-        <h1 className="page-title">{isEdit ? 'Edit Product' : 'Add Product'}</h1>
+    <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">
+          {isEdit ? 'Edit Product' : 'Add Product'}
+        </h1>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && (
+        <div className="rounded-sm border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-sm text-[#991b1b]">
+          {error}
+        </div>
+      )}
 
-      <form className="card form" onSubmit={handleSubmit}>
-        <div className="form-grid">
-          <div className="field">
-            <label className="label" htmlFor="name">
+      <form
+        className="max-w-[720px] rounded-lg border border-border bg-surface p-4 shadow-sm md:p-6"
+        onSubmit={handleSubmit}
+      >
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="name">
               Product name *
             </label>
             <input
               id="name"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               value={form.name}
               onChange={setField('name')}
               required
@@ -152,11 +161,16 @@ export default function ProductFormPage() {
             />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="category">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="category">
               Category *
             </label>
-            <select id="category" className="input" value={form.categoryId} onChange={setField('categoryId')}>
+            <select
+              id="category"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+              value={form.categoryId}
+              onChange={setField('categoryId')}
+            >
               <option value="">Select a category</option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
@@ -167,7 +181,7 @@ export default function ProductFormPage() {
             </select>
             {form.categoryId === 'new' && (
               <input
-                className="input"
+                className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
                 placeholder="New category name"
                 value={newCategory}
                 onChange={(event) => setNewCategory(event.target.value)}
@@ -175,25 +189,42 @@ export default function ProductFormPage() {
             )}
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="brand">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="brand">
               Brand
             </label>
-            <input id="brand" className="input" value={form.brand} onChange={setField('brand')} maxLength={100} />
+            <input
+              id="brand"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+              value={form.brand}
+              onChange={setField('brand')}
+              maxLength={100}
+            />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="sku">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="sku">
               SKU / Code
             </label>
-            <input id="sku" className="input" value={form.sku} onChange={setField('sku')} maxLength={50} />
+            <input
+              id="sku"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+              value={form.sku}
+              onChange={setField('sku')}
+              maxLength={50}
+            />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="unit">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="unit">
               Unit *
             </label>
-            <select id="unit" className="input" value={form.unit} onChange={setField('unit')}>
+            <select
+              id="unit"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+              value={form.unit}
+              onChange={setField('unit')}
+            >
               {Object.entries(UNIT_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
@@ -202,13 +233,13 @@ export default function ProductFormPage() {
             </select>
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="purchasePrice">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="purchasePrice">
               Purchase price *
             </label>
             <input
               id="purchasePrice"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
               min="0"
               step="0.01"
@@ -218,13 +249,13 @@ export default function ProductFormPage() {
             />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="sellingPrice">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="sellingPrice">
               Selling price *
             </label>
             <input
               id="sellingPrice"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
               min="0"
               step="0.01"
@@ -234,13 +265,13 @@ export default function ProductFormPage() {
             />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="currentQuantity">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="currentQuantity">
               Current quantity
             </label>
             <input
               id="currentQuantity"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
               min="0"
               step="any"
@@ -249,13 +280,13 @@ export default function ProductFormPage() {
             />
           </div>
 
-          <div className="field">
-            <label className="label" htmlFor="minimumStockLevel">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="minimumStockLevel">
               Minimum stock level
             </label>
             <input
               id="minimumStockLevel"
-              className="input"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
               min="0"
               step="any"
@@ -264,11 +295,11 @@ export default function ProductFormPage() {
             />
           </div>
 
-          <div className="field">
-            <span className="label" id="status-label">
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-semibold" id="status-label">
               Status
             </span>
-            <label className="field-checkbox" htmlFor="active">
+            <label className="flex items-center gap-2 pt-2 text-sm" htmlFor="active">
               <input
                 id="active"
                 type="checkbox"
@@ -280,11 +311,19 @@ export default function ProductFormPage() {
           </div>
         </div>
 
-        <div className="form-actions">
-          <button type="button" className="btn btn-secondary" onClick={() => navigate('/products')}>
+        <div className="mt-6 flex flex-col-reverse gap-2 md:flex-row md:justify-end">
+          <button
+            type="button"
+            className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0 md:w-auto"
+            onClick={() => navigate('/products')}
+          >
             Cancel
           </button>
-          <button type="submit" className="btn btn-primary" disabled={saving}>
+          <button
+            type="submit"
+            className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0 md:w-auto"
+            disabled={saving}
+          >
             {saving ? 'Saving…' : isEdit ? 'Save Changes' : 'Save Product'}
           </button>
         </div>

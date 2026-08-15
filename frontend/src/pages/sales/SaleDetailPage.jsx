@@ -32,16 +32,18 @@ export default function SaleDetailPage() {
 
   if (loading) {
     return (
-      <div className="content">
-        <p className="loading-text">Loading…</p>
+      <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
+        <p className="text-secondary">Loading…</p>
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="content">
-        <div className="alert alert-danger">{error}</div>
+      <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
+        <div className="rounded-sm border border-[#fecaca] bg-[#fee2e2] px-4 py-3 text-sm text-[#991b1b]">
+          {error}
+        </div>
       </div>
     )
   }
@@ -53,58 +55,73 @@ export default function SaleDetailPage() {
   )
 
   return (
-    <div className="content">
-      <div className="page-header">
-        <h1 className="page-title">Sale #{sale.id}</h1>
-        <Link to="/sales" className="btn btn-secondary btn-sm">
+    <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Sale #{sale.id}</h1>
+        <Link
+          to="/sales"
+          className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+        >
           ← Back to Sales
         </Link>
       </div>
 
       {justCompleted && (
-        <div className="alert alert-success">
+        <div className="rounded-sm border border-[#bbf7d0] bg-primary-light px-4 py-3 text-sm text-[#166534]">
           Sale #{sale.id} completed — stock was reduced automatically.
         </div>
       )}
 
-      <p className="subtitle">{formatDateTime(sale.createdAt)}</p>
+      <p className="m-0 text-sm text-secondary">{formatDateTime(sale.createdAt)}</p>
 
-      <div className="table-wrap">
-        <table className="data-table">
+      <div className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
+        <table className="w-full min-w-[600px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
           <thead>
             <tr>
-              <th>Product</th>
-              <th>Qty</th>
-              <th>Unit Price</th>
-              <th>Line Total</th>
+              <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                Product
+              </th>
+              <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                Qty
+              </th>
+              <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                Unit Price
+              </th>
+              <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                Line Total
+              </th>
             </tr>
           </thead>
           <tbody>
             {sale.items.map((item, index) => (
               <tr key={`${item.productId}-${index}`}>
-                <td>
-                  <div className="product-name">{item.productName}</div>
-                  {item.productSku && <div className="product-brand">{item.productSku}</div>}
+                <td className="border-b border-border p-3 text-left align-middle">
+                  <div className="font-semibold">{item.productName}</div>
+                  {item.productSku && <div className="text-xs text-secondary">{item.productSku}</div>}
                 </td>
-                <td>
+                <td className="border-b border-border p-3 text-left align-middle">
                   {item.quantity} {UNIT_LABELS[item.unit] ?? item.unit}
                 </td>
-                <td>{formatCurrency(item.unitPrice)}</td>
-                <td>{formatCurrency(item.lineTotal)}</td>
+                <td className="border-b border-border p-3 text-left align-middle">
+                  {formatCurrency(item.unitPrice)}
+                </td>
+                <td className="border-b border-border p-3 text-left align-middle">
+                  {formatCurrency(item.lineTotal)}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      <div className="card total-box">
+      <div className="flex flex-col items-start gap-2 rounded-lg border border-border bg-surface p-4 pt-4 shadow-sm md:flex-row md:items-center md:justify-between md:gap-4 md:p-6">
         <div>
-          <div className="pagination-info">Estimated gross profit</div>
-          <span className="total-amount">{formatCurrency(profit)}</span>
+          <div className="text-sm text-secondary">Estimated gross profit</div>
+          <span className="text-[22px] font-bold">{formatCurrency(profit)}</span>
         </div>
-        <div style={{ textAlign: 'right' }}>
-          <div className="pagination-info">Sale total</div>
-          <span className="total-amount">{formatCurrency(sale.totalAmount)}</span>
+        <div className="text-right">
+          <div className="text-sm text-secondary">Sale total</div>
+          <span className="text-[22px] font-bold">{formatCurrency(sale.totalAmount)}</span>
         </div>
       </div>
     </div>
