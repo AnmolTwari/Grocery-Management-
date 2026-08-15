@@ -29,9 +29,11 @@
 }
 
 .auth-brand .brand-logo {
-  width: 96px;
-  height: 96px;
+  height: 100px;
+  width: auto;
+  max-width: 100%;
   object-fit: contain;
+  filter: drop-shadow(0 4px 12px rgba(15, 23, 42, 0.15));
 }
 
 .auth-title {
@@ -121,8 +123,8 @@
   }
 
   .auth-brand .brand-logo {
-    width: 80px;
-    height: 80px;
+    height: 84px;
+    width: auto;
   }
 
   .auth-submit {

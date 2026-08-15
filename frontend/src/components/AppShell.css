@@ -19,15 +19,17 @@
 .brand {
   display: flex;
   align-items: center;
+  justify-content: center;
   padding-bottom: var(--space-2);
 }
 
 .brand-logo {
-  height: 72px;
+  height: 80px;
   width: auto;
   max-width: 100%;
   object-fit: contain;
   flex-shrink: 0;
+  filter: drop-shadow(0 2px 8px rgba(15, 23, 42, 0.18));
 }
 
 .nav-list {
@@ -172,7 +174,7 @@
   }
 
   .brand-logo {
-    height: 40px;
+    height: 44px;
   }
 
   .menu-toggle {
