@@ -17,13 +17,16 @@ public class SettingsService {
     private final PasswordEncoder passwordEncoder;
     private final CurrentUserService currentUserService;
     private final RateLimiterService rateLimiterService;
+    private final UserDetailsServiceImpl userDetailsService;
 
     public SettingsService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            CurrentUserService currentUserService, RateLimiterService rateLimiterService) {
+            CurrentUserService currentUserService, RateLimiterService rateLimiterService,
+            UserDetailsServiceImpl userDetailsService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.currentUserService = currentUserService;
         this.rateLimiterService = rateLimiterService;
+        this.userDetailsService = userDetailsService;
     }
 
     @Transactional
@@ -39,6 +42,7 @@ public class SettingsService {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        userDetailsService.evict(user.getUsername());
         rateLimiterService.clearPasswordAttempts(user.getId());
     }
 }

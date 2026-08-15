@@ -28,7 +28,7 @@ async function loadCsrf() {
   csrfToken = data.token
 }
 
-async function request(path, { method = 'GET', body, retried = false, ...options } = {}) {
+async function doRequest(path, { method = 'GET', body, retried = false, ...options } = {}) {
   const csrfToken = getCsrfToken()
   const headers = {
     ...(body ? { 'Content-Type': 'application/json' } : {}),
@@ -46,7 +46,7 @@ async function request(path, { method = 'GET', body, retried = false, ...options
 
   if (response.status === 403 && !retried) {
     await loadCsrf()
-    return request(path, { method, body, retried: true, ...options })
+    return doRequest(path, { method, body, retried: true, ...options })
   }
 
   if (response.status === 401 && !path.startsWith('/auth/')) {
@@ -63,6 +63,25 @@ async function request(path, { method = 'GET', body, retried = false, ...options
     return null
   }
   return response.json()
+}
+
+const inFlight = new Map()
+
+function request(path, options = {}) {
+  const { method = 'GET', retried = false } = options
+  const key = `${method} ${path}`
+  if (method === 'GET' && !retried) {
+    const pending = inFlight.get(key)
+    if (pending) {
+      return pending
+    }
+    const promise = doRequest(path, options).finally(() => {
+      inFlight.delete(key)
+    })
+    inFlight.set(key, promise)
+    return promise
+  }
+  return doRequest(path, options)
 }
 
 async function buildError(response) {

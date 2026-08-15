@@ -8,11 +8,12 @@ import static org.mockito.Mockito.when;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
@@ -33,7 +34,6 @@ class ReportServiceTest {
     @Mock
     private CurrentUserService currentUserService;
 
-    @InjectMocks
     private ReportService reportService;
 
     private User owner;
@@ -42,6 +42,8 @@ class ReportServiceTest {
     void setUp() {
         owner = User.builder().username("owner").build();
         when(currentUserService.currentUser()).thenReturn(owner);
+        reportService = new ReportService(saleRepository, currentUserService,
+                Executors.newFixedThreadPool(3));
     }
 
     @Test

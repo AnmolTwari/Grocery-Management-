@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,8 +15,10 @@ import com.shopmanager.entity.User;
 
 public interface SaleRepository extends JpaRepository<Sale, Long> {
 
+    @EntityGraph(attributePaths = "items")
     Page<Sale> findByOwner(User owner, Pageable pageable);
 
+    @EntityGraph(attributePaths = { "items", "items.product" })
     java.util.Optional<Sale> findByIdAndOwner(Long id, User owner);
 
 

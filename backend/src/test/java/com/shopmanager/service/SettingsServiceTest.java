@@ -36,6 +36,9 @@ class SettingsServiceTest {
     @Mock
     private RateLimiterService rateLimiterService;
 
+    @Mock
+    private UserDetailsServiceImpl userDetailsService;
+
     @InjectMocks
     private SettingsService settingsService;
 
