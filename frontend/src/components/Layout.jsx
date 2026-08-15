@@ -29,7 +29,7 @@ export default function Layout() {
       <aside className="sidebar">
         <div className="sidebar-top">
           <div className="brand">
-            <img src="/logo.png" alt="Grocery Manager logo" className="brand-logo" />
+            <img src="/logo.png" alt="ShopManager logo" className="brand-logo" />
           </div>
           <button
             type="button"

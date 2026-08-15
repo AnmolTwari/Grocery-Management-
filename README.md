@@ -1,6 +1,6 @@
-# Grocery Shop Management System
+# ShopManager
 
-A full-stack web application for small grocery shop owners to manage their business — products, stock, sales, and reports — with per-owner data isolation.
+A full-stack web application for small shop owners to manage their business — products, stock, sales, and reports — with per-owner data isolation. Built for any retail category: groceries, clothing, electronics, general stores, and more.
 
 **Backend:** Java 21, Spring Boot 4.1, Spring Security (JWT), Spring Data JPA, PostgreSQL (Supabase)
 **Frontend:** React 19, Vite, React Router, plain CSS

@@ -33,7 +33,7 @@ Thumbs.db
 .claude/
 
 # ---- Docs (kept local only, not in the repository) ----
-Grocery-Shop-Management-System-Docs/
+ShopManager-Docs/
 
 # ---- OS / Misc ----
 *.log

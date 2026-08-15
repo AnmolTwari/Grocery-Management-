@@ -8,11 +8,11 @@
 		<version>4.1.0</version>
 		<relativePath/> 
 	</parent>
-	<groupId>com.grocery</groupId>
-	<artifactId>grocery-backend</artifactId>
+	<groupId>com.shopmanager</groupId>
+	<artifactId>shopmanager-backend</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>grocery-backend</name>
-	<description>Grocery Shop Management System</description>
+	<name>shopmanager-backend</name>
+	<description>ShopManager - shop management system for any retail category</description>
 	<url/>
 	<licenses>
 		<license/>

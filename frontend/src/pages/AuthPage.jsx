@@ -66,7 +66,7 @@ export default function AuthPage({ mode }) {
     <div className="auth-shell">
       <div className="auth-card">
         <div className="auth-brand">
-          <img src="/logo.png" alt="Grocery Manager logo" className="brand-logo" />
+          <img src="/logo.png" alt="ShopManager logo" className="brand-logo" />
         </div>
         <h1 className="auth-title">{isRegister ? 'Create your shop account' : 'Sign in to your shop'}</h1>
         <p className="auth-subtitle">
@@ -162,7 +162,7 @@ export default function AuthPage({ mode }) {
             </>
           ) : (
             <>
-              New to Grocery Manager? <Link to="/register">Create an account</Link>
+              New to ShopManager? <Link to="/register">Create an account</Link>
             </>
           )}
         </p>
