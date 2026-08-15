@@ -484,6 +484,7 @@
 .data-table th,
 .data-table td {
   text-align: left;
+  vertical-align: middle;
   padding: var(--space-3);
   border-bottom: 1px solid var(--color-border);
 }
