@@ -61,7 +61,7 @@ export default function DashboardPage() {
 
       {summary && (
         <>
-          <div className="grid grid-cols-2 gap-3 min-[481px]:grid-cols-[repeat(auto-fit,minmax(170px,1fr))] min-[481px]:gap-4">
+          <div className="grid grid-cols-2 gap-3 min-[481px]:grid-cols-[repeat(auto-fit,minmax(170px,1fr))] min-[481px]:gap-4 text-center">
             {tiles.map((tile) => (
               <div
                 className="rounded-lg border border-border bg-surface p-3 shadow-sm min-[481px]:p-4"

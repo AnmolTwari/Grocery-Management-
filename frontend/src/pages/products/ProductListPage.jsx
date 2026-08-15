@@ -212,7 +212,7 @@ export default function ProductListPage() {
                     <td className="border-b border-border p-3 text-left align-middle">
                       <StockStatusBadge status={product.stockStatus} />
                     </td>
-                    <td className="flex items-center gap-2 border-b border-border p-3 text-left align-middle whitespace-nowrap">
+                    <td className=" items-center gap-2 border-b border-border p-3 text-left align-middle whitespace-nowrap">
                       <Link
                         to={`/products/${product.id}/edit`}
                         className="mr-2.5 inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-border bg-surface text-secondary transition-colors hover:bg-bg hover:text-text md:h-8 md:w-8"
