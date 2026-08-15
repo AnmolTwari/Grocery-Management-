@@ -97,7 +97,7 @@ export default function SaleDetailPage() {
         </table>
       </div>
 
-      <div className="card total-box mt-4">
+      <div className="card total-box">
         <div>
           <div className="pagination-info">Estimated gross profit</div>
           <span className="total-amount">{formatCurrency(profit)}</span>

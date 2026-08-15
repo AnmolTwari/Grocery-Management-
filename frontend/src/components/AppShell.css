@@ -74,6 +74,9 @@
   width: 100%;
   max-width: 1180px;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
 }
 
 .card {
@@ -154,22 +157,10 @@
   justify-content: flex-start;
 }
 
-.mt-4 {
-  margin-top: var(--space-4);
-}
-
-.mt-8 {
-  margin-top: var(--space-8);
-}
-
-.mb-4 {
-  margin-bottom: var(--space-4);
-}
-
 .subtitle {
   color: var(--color-text-secondary);
   font-size: 14px;
-  margin: 0 0 var(--space-4);
+  margin: 0;
 }
 
 .form-narrow {
@@ -178,6 +169,10 @@
 
 .field-full {
   grid-column: 1 / -1;
+}
+
+.form-stack .field + .field {
+  margin-top: var(--space-4);
 }
 
 @media (max-width: 720px) {
@@ -347,7 +342,10 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-4);
+}
+
+.page-header .btn {
+  flex-shrink: 0;
 }
 
 .page-title {
@@ -441,7 +439,6 @@
   display: flex;
   gap: var(--space-2);
   flex-wrap: wrap;
-  margin-bottom: var(--space-4);
 }
 
 .toolbar .input {
@@ -518,11 +515,17 @@
   white-space: nowrap;
 }
 
+.actions .btn {
+  height: 32px;
+  padding-top: 0;
+  padding-bottom: 0;
+  flex-shrink: 0;
+}
+
 
 .alert {
   padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-sm);
-  margin-bottom: var(--space-4);
   font-size: 14px;
 }
 
@@ -544,7 +547,6 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   overflow: hidden;
-  margin-bottom: var(--space-4);
 }
 
 .seg-btn {
@@ -716,7 +718,6 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-3);
-  margin-top: var(--space-4);
 }
 
 .pagination-info {
@@ -761,7 +762,6 @@ a.nav-link.active {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: var(--space-4);
-  margin-bottom: var(--space-4);
 }
 
 .stat-card {
@@ -777,7 +777,7 @@ a.nav-link.active {
 }
 
 .stat-label {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
   font-size: 13px;
   color: var(--color-text-secondary);
 }
@@ -794,11 +794,18 @@ a.nav-link.active {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-bottom: var(--space-4);
 }
 
 .card-wide {
   max-width: none;
+}
+
+.content > .section-title {
+  margin: 0;
+}
+
+.content > .total-box {
+  margin-top: 0;
 }
 
 .section-title {

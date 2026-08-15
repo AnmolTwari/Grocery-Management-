@@ -215,9 +215,7 @@ export default function InventoryPage() {
         </div>
       </form>
 
-      <div className="mt-8">
-        <h2 className="section-title">Movement history</h2>
-      </div>
+      <h2 className="section-title">Movement history</h2>
 
       <div className="toolbar">
         <select

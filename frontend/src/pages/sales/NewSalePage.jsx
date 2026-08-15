@@ -181,7 +181,7 @@ export default function NewSalePage() {
         )}
       </div>
 
-      <div className="card mt-4">
+      <div className="card">
         <h2 className="section-title">Sale items</h2>
 
         {lines.length === 0 ? (
