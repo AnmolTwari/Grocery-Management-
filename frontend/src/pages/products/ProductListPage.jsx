@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { IconEdit, IconTrash } from '../../components/icons'
 import StockStatusBadge from '../../components/StockStatusBadge'
 import { listCategories } from '../../services/categories'
 import { listProducts, removeProduct } from '../../services/products'
@@ -180,15 +181,22 @@ export default function ProductListPage() {
                       <StockStatusBadge status={product.stockStatus} />
                     </td>
                     <td className="actions">
-                      <Link to={`/products/${product.id}/edit`} className="btn btn-secondary btn-sm">
-                        Edit
+                      <Link
+                        to={`/products/${product.id}/edit`}
+                        className="btn-icon"
+                        title={`Edit ${product.name}`}
+                        aria-label={`Edit ${product.name}`}
+                      >
+                        <IconEdit />
                       </Link>
                       <button
                         type="button"
-                        className="btn btn-danger btn-sm"
+                        className="btn-icon btn-icon-danger"
+                        title={`Remove ${product.name}`}
+                        aria-label={`Remove ${product.name}`}
                         onClick={() => handleRemove(product)}
                       >
-                        Remove
+                        <IconTrash />
                       </button>
                     </td>
                   </tr>
