@@ -67,9 +67,7 @@ export default function SaleDetailPage() {
         </div>
       )}
 
-      <p className="pagination-info" style={{ marginBottom: 'var(--space-4)' }}>
-        {formatDateTime(sale.createdAt)}
-      </p>
+      <p className="subtitle">{formatDateTime(sale.createdAt)}</p>
 
       <div className="table-wrap">
         <table className="data-table">
@@ -99,7 +97,7 @@ export default function SaleDetailPage() {
         </table>
       </div>
 
-      <div className="card total-box" style={{ marginTop: 'var(--space-4)' }}>
+      <div className="card total-box mt-4">
         <div>
           <div className="pagination-info">Estimated gross profit</div>
           <span className="total-amount">{formatCurrency(profit)}</span>

@@ -64,7 +64,7 @@ export default function SettingsPage() {
 
       <div className="card card-wide">
         <h2 className="section-title">Account</h2>
-        <div className="field">
+        <div className="field form-narrow">
           <span className="label">Username</span>
           <div className="input-static">{username || '—'}</div>
         </div>
@@ -72,7 +72,7 @@ export default function SettingsPage() {
 
       <div className="card card-wide">
         <h2 className="section-title">Change Password</h2>
-        <form onSubmit={handleSubmit} noValidate>
+        <form className="form-narrow" onSubmit={handleSubmit} noValidate>
           <div className="field">
             <label className="label" htmlFor="current-password">
               Current password

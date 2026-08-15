@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import StockStatusBadge from '../../components/StockStatusBadge'
 import { createSale } from '../../services/sales'
 import { listProducts } from '../../services/products'
@@ -125,16 +125,16 @@ export default function NewSalePage() {
     <div className="content">
       <div className="page-header">
         <h1 className="page-title">New Sale</h1>
-        <span className="btn btn-secondary btn-sm" onClick={() => navigate('/sales')} style={{ cursor: 'pointer' }}>
+        <Link to="/sales" className="btn btn-secondary btn-sm">
           ← Back to Sales
-        </span>
+        </Link>
       </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
       {success && !error && <div className="alert alert-success">{success}</div>}
 
       <div className="card">
-        <h2 className="page-title">Add items</h2>
+        <h2 className="section-title">Add items</h2>
         <div className="toolbar">
           <input
             type="search"
@@ -181,8 +181,8 @@ export default function NewSalePage() {
         )}
       </div>
 
-      <div className="card" style={{ marginTop: 'var(--space-4)' }}>
-        <h2 className="page-title">Sale items</h2>
+      <div className="card mt-4">
+        <h2 className="section-title">Sale items</h2>
 
         {lines.length === 0 ? (
           <p className="empty-state" style={{ padding: 'var(--space-6)' }}>

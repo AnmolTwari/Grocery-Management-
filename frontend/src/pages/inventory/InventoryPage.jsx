@@ -193,7 +193,7 @@ export default function InventoryPage() {
             )}
           </div>
 
-          <div className="field">
+          <div className="field field-full">
             <label className="label" htmlFor="inventory-reason">
               Reason
             </label>
@@ -215,8 +215,8 @@ export default function InventoryPage() {
         </div>
       </form>
 
-      <div className="page-header" style={{ marginTop: 'var(--space-8)' }}>
-        <h2 className="page-title">Movement history</h2>
+      <div className="mt-8">
+        <h2 className="section-title">Movement history</h2>
       </div>
 
       <div className="toolbar">
