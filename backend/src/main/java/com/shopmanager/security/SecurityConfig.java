@@ -55,7 +55,7 @@ public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Excepti
                     .authenticationEntryPoint(restAuthenticationHandlers)
                     .accessDeniedHandler(restAuthenticationHandlers))
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/api/auth/csrf", "/api/auth/login", "/api/auth/register",
+                    .requestMatchers("/api/health", "/api/auth/csrf", "/api/auth/login", "/api/auth/register",
                             "/api/auth/logout").permitAll()
                     .anyRequest().authenticated())
             .addFilterBefore(
