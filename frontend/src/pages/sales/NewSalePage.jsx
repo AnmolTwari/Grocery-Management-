@@ -12,6 +12,7 @@ export default function NewSalePage() {
   const [search, setSearch] = useState('')
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
+  const [selected, setSelected] = useState([])
 
   const [lines, setLines] = useState([])
   const [submitting, setSubmitting] = useState(false)
@@ -44,31 +45,63 @@ export default function NewSalePage() {
     }
   }, [search])
 
-  function addProduct(product) {
+  function addProducts(products) {
     setError(null)
     setSuccess(null)
     setLines((current) => {
-      const existing = current.find((line) => line.productId === product.id)
-      if (existing) {
-        return current.map((line) =>
-          line.productId === product.id
-            ? { ...line, quantity: String(toNumber(line.quantity) + 1) }
-            : line,
-        )
+      const next = [...current]
+      for (const product of products) {
+        const index = next.findIndex((line) => line.productId === product.id)
+        if (index !== -1) {
+          next[index] = {
+            ...next[index],
+            quantity: String(toNumber(next[index].quantity) + 1),
+          }
+        } else {
+          next.push({
+            productId: product.id,
+            name: product.name,
+            sku: product.sku,
+            unit: product.unit,
+            unitPrice: product.sellingPrice,
+            currentQuantity: product.currentQuantity,
+            quantity: '1',
+          })
+        }
       }
-      return [
-        ...current,
-        {
-          productId: product.id,
-          name: product.name,
-          sku: product.sku,
-          unit: product.unit,
-          unitPrice: product.sellingPrice,
-          currentQuantity: product.currentQuantity,
-          quantity: '1',
-        },
-      ]
+      return next
     })
+  }
+
+  function addProduct(product) {
+    addProducts([product])
+    setSearch('')
+  }
+
+  function toggleSelect(productId) {
+    setSelected((current) =>
+      current.includes(productId)
+        ? current.filter((id) => id !== productId)
+        : [...current, productId],
+    )
+  }
+
+  function toggleSelectAll() {
+    const selectable = results
+      .filter((product) => Number(product.currentQuantity) > 0)
+      .map((product) => product.id)
+    setSelected((current) => {
+      const allSelected = selectable.length > 0 && selectable.every((id) => current.includes(id))
+      return allSelected
+        ? current.filter((id) => !selectable.includes(id))
+        : [...new Set([...current, ...selectable])]
+    })
+  }
+
+  function addSelected() {
+    const products = results.filter((product) => selected.includes(product.id))
+    addProducts(products)
+    setSelected([])
     setSearch('')
   }
 
@@ -87,6 +120,7 @@ export default function NewSalePage() {
   }
 
   const bagTotal = lines.reduce((sum, line) => sum + lineTotal(line), 0)
+  const selectableResults = results.filter((product) => Number(product.currentQuantity) > 0)
 
   async function completeSale() {
     setError(null)
@@ -152,7 +186,10 @@ export default function NewSalePage() {
             className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary min-[481px]:min-w-40 min-[481px]:flex-1"
             placeholder="Search products by name or SKU…"
             value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            onChange={(event) => {
+              setSearch(event.target.value)
+              setSelected([])
+            }}
           />
         </div>
 
@@ -161,37 +198,73 @@ export default function NewSalePage() {
           <p className="mt-2 text-secondary">No products match “{search.trim()}”.</p>
         )}
         {results.length > 0 && (
-          <ul className="m-0 mt-2 list-none overflow-hidden rounded-sm border border-border p-0">
-            {results.map((product) => {
-              const outOfStock = Number(product.currentQuantity) <= 0
-              return (
-                <li
-                  className="flex items-start justify-between gap-3 border-b border-border bg-surface px-3 py-2 last:border-b-0 md:items-center"
-                  key={product.id}
-                >
-                  <div>
-                    <div className="font-semibold">{product.name}</div>
-                    <div className="text-xs text-secondary">
-                      {product.brand ? `${product.brand} · ` : ''}
-                      {product.currentQuantity} {UNIT_LABELS[product.unit] ?? product.unit} ·{' '}
-                      {formatCurrency(product.sellingPrice)}
+          <>
+            <div className="mt-2 flex flex-col gap-2 min-[481px]:flex-row min-[481px]:items-center min-[481px]:justify-between">
+              <label className="flex cursor-pointer items-center gap-2 text-sm text-secondary">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 shrink-0 cursor-pointer accent-primary"
+                  checked={
+                    selectableResults.length > 0 &&
+                    selectableResults.every((product) => selected.includes(product.id))
+                  }
+                  disabled={selectableResults.length === 0}
+                  onChange={toggleSelectAll}
+                />
+                Select all ({selectableResults.length})
+              </label>
+              <button
+                type="button"
+                className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-3 py-1 text-[13px] font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+                disabled={selected.length === 0}
+                onClick={addSelected}
+              >
+                Add selected ({selected.length})
+              </button>
+            </div>
+            <ul className="m-0 mt-2 list-none overflow-hidden rounded-sm border border-border p-0">
+              {results.map((product) => {
+                const outOfStock = Number(product.currentQuantity) <= 0
+                const isSelected = selected.includes(product.id)
+                return (
+                  <li
+                    className={`flex items-start justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0 md:items-center ${isSelected ? 'bg-primary-light/60' : 'bg-surface'}`}
+                    key={product.id}
+                  >
+                    <div className="flex flex-1 items-start gap-3 md:items-center">
+                      <input
+                        type="checkbox"
+                        className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-primary disabled:cursor-not-allowed md:mt-0"
+                        checked={isSelected}
+                        disabled={outOfStock}
+                        onChange={() => toggleSelect(product.id)}
+                        aria-label={`Select ${product.name}`}
+                      />
+                      <div>
+                        <div className="font-semibold">{product.name}</div>
+                        <div className="text-xs text-secondary">
+                          {product.brand ? `${product.brand} · ` : ''}
+                          {product.currentQuantity} {UNIT_LABELS[product.unit] ?? product.unit} ·{' '}
+                          {formatCurrency(product.sellingPrice)}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 whitespace-nowrap">
-                    <StockStatusBadge status={product.stockStatus} />
-                    <button
-                      type="button"
-                      className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-3 py-1 text-[13px] font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
-                      disabled={outOfStock}
-                      onClick={() => addProduct(product)}
-                    >
-                      {outOfStock ? 'Out of stock' : 'Add'}
-                    </button>
-                  </div>
-                </li>
-              )
-            })}
-          </ul>
+                    <div className="flex items-center gap-2 whitespace-nowrap">
+                      <StockStatusBadge status={product.stockStatus} />
+                      <button
+                        type="button"
+                        className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-3 py-1 text-[13px] font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+                        disabled={outOfStock}
+                        onClick={() => addProduct(product)}
+                      >
+                        {outOfStock ? 'Out of stock' : 'Add'}
+                      </button>
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </>
         )}
       </div>
 
