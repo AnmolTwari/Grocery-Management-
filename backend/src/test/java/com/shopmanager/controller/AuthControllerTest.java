@@ -107,11 +107,14 @@ class AuthControllerTest {
     void registerCreatesUserWithoutToken() {
         request.setUsername("owner2");
         request.setPassword("secret123");
+        request.setEmail("Owner2@Example.com ");
 
         when(userRepository.existsByUsername("owner2")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("owner2@example.com")).thenReturn(false);
         when(passwordEncoder.encode("secret123")).thenReturn("hashed");
         User saved = User.builder()
                 .username("owner2")
+                .email("owner2@example.com")
                 .password("hashed")
                 .enabled(true)
                 .build();
@@ -121,7 +124,22 @@ class AuthControllerTest {
 
         assertThat(response).isNotNull();
         assertThat(response.getUsername()).isEqualTo("owner2");
+        assertThat(response.getEmail()).isEqualTo("owner2@example.com");
         verify(userRepository).save(any(User.class));
+    }
+
+    @Test
+    void registerRejectsDuplicateEmail() {
+        request.setUsername("owner2");
+        request.setPassword("secret123");
+        request.setEmail("owner2@example.com");
+
+        when(userRepository.existsByUsername("owner2")).thenReturn(false);
+        when(userRepository.existsByEmailIgnoreCase("owner2@example.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> authController.register(request, new MockHttpServletRequest()))
+                .isInstanceOf(DuplicateResourceException.class);
+        verify(userRepository, never()).save(any(User.class));
     }
 
     @Test

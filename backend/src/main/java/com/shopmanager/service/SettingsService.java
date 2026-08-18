@@ -8,6 +8,7 @@ import com.shopmanager.entity.User;
 import com.shopmanager.repository.UserRepository;
 import com.shopmanager.security.CurrentUserService;
 import com.shopmanager.security.RateLimiterService;
+import com.shopmanager.util.EmailUtil;
 
 
 @Service
@@ -42,7 +43,28 @@ public class SettingsService {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
-        userDetailsService.evict(user.getUsername());
+        userDetailsService.evictUser(user);
         rateLimiterService.clearPasswordAttempts(user.getId());
+    }
+
+    @Transactional
+    public String changeEmail(String newEmail) {
+        User user = currentUserService.currentUser();
+        String email = EmailUtil.normalize(newEmail);
+        if (email == null) {
+            throw new IllegalArgumentException("Enter a valid email address");
+        }
+        if (email.equalsIgnoreCase(user.getEmail())) {
+            throw new IllegalArgumentException("New email must be different from the current one");
+        }
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            throw new IllegalArgumentException("Email is already registered to another account");
+        }
+        String oldEmail = user.getEmail();
+        user.setEmail(email);
+        userRepository.save(user);
+        userDetailsService.evict(oldEmail);
+        userDetailsService.evictUser(user);
+        return email;
     }
 }

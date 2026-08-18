@@ -24,6 +24,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.sale.SaleItemRequest;
 import com.shopmanager.dto.sale.SaleRequest;
 import com.shopmanager.dto.sale.SaleResponse;
@@ -187,11 +188,11 @@ class SaleServiceTest {
         when(saleRepository.findByOwner(owner, pageable))
                 .thenReturn(new PageImpl<>(List.of(sale), pageable, 1));
 
-        Page<SaleSummaryResponse> page = saleService.listSales(pageable);
+        PageResponse<SaleSummaryResponse> page = saleService.listSales(pageable);
 
-        assertThat(page.getTotalElements()).isEqualTo(1);
-        assertThat(page.getContent().getFirst().id()).isEqualTo(4L);
-        assertThat(page.getContent().getFirst().itemCount()).isEqualTo(1);
-        assertThat(page.getContent().getFirst().totalAmount()).isEqualByComparingTo("25.00");
+        assertThat(page.totalElements()).isEqualTo(1);
+        assertThat(page.content().getFirst().id()).isEqualTo(4L);
+        assertThat(page.content().getFirst().itemCount()).isEqualTo(1);
+        assertThat(page.content().getFirst().totalAmount()).isEqualByComparingTo("25.00");
     }
 }

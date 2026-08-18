@@ -20,12 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.shopmanager.dto.auth.AuthRequest;
 import com.shopmanager.dto.auth.AuthResponse;
 import com.shopmanager.entity.User;
+import com.shopmanager.entity.UserRole;
 import com.shopmanager.exception.DuplicateResourceException;
 import com.shopmanager.repository.UserRepository;
 import com.shopmanager.security.AuthCookieService;
 import com.shopmanager.security.CurrentUserService;
 import com.shopmanager.security.JwtService;
 import com.shopmanager.security.RateLimiterService;
+import com.shopmanager.util.EmailUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -53,8 +55,11 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<AuthResponse> me() {
+        User current = currentUserService.currentUser();
         return ResponseEntity.ok(AuthResponse.builder()
-                .username(currentUserService.currentUser().getUsername())
+                .username(current.getUsername())
+                .email(current.getEmail())
+                .role(roleOf(current))
                 .build());
     }
 
@@ -71,8 +76,11 @@ public class AuthController {
             String token = jwtService.generateToken(userDetails);
             response.addHeader(HttpHeaders.SET_COOKIE, authCookieService.createTokenCookie(token).toString());
             rateLimiterService.clearLoginAttempts(request.getUsername());
+            User user = (User) userDetails;
             return ResponseEntity.ok(AuthResponse.builder()
                     .username(userDetails.getUsername())
+                    .email(user.getEmail())
+                    .role(roleOf(user))
                     .build());
         } catch (BadCredentialsException e) {
             rateLimiterService.recordFailedLogin(httpRequest, request.getUsername());
@@ -90,8 +98,15 @@ public class AuthController {
                     "Username is already taken", "username");
         }
 
+        String email = EmailUtil.normalize(request.getEmail());
+        if (email != null && userRepository.existsByEmailIgnoreCase(email)) {
+            throw new DuplicateResourceException("EMAIL_TAKEN",
+                    "Email is already registered", "email");
+        }
+
         User user = User.builder()
                 .username(request.getUsername())
+                .email(email)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .enabled(true)
                 .build();
@@ -101,6 +116,8 @@ public class AuthController {
 
         return ResponseEntity.ok(AuthResponse.builder()
                 .username(user.getUsername())
+                .email(user.getEmail())
+                .role(roleOf(user))
                 .build());
     }
 
@@ -108,5 +125,10 @@ public class AuthController {
     public ResponseEntity<Void> logout(HttpServletResponse response) {
         response.addHeader(HttpHeaders.SET_COOKIE, authCookieService.createLogoutCookie().toString());
         return ResponseEntity.noContent().build();
+    }
+
+    private String roleOf(User user) {
+        UserRole effective = user.getRole() != null ? user.getRole() : UserRole.USER;
+        return effective.name();
     }
 }

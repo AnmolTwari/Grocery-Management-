@@ -8,11 +8,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.sale.SaleItemRequest;
 import com.shopmanager.dto.sale.SaleRequest;
 import com.shopmanager.dto.sale.SaleResponse;
@@ -89,9 +89,10 @@ public class SaleService {
     }
 
     @Transactional(readOnly = true)
-    public Page<SaleSummaryResponse> listSales(Pageable pageable) {
-        return saleRepository.findByOwner(currentUserService.currentUser(), pageable)
-                .map(SaleSummaryResponse::from);
+    public PageResponse<SaleSummaryResponse> listSales(Pageable pageable) {
+        return PageResponse.from(saleRepository
+                .findByOwner(currentUserService.currentUser(), pageable)
+                .map(SaleSummaryResponse::from));
     }
 
     private void requireItems(List<SaleItemRequest> items) {

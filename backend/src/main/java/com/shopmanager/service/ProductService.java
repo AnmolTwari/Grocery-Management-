@@ -4,12 +4,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.product.ProductRequest;
 import com.shopmanager.dto.product.ProductResponse;
 import com.shopmanager.entity.Category;
@@ -47,17 +48,27 @@ public class ProductService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ProductResponse> listProducts(String search, Long categoryId,
+    public PageResponse<ProductResponse> listProducts(String search, Long categoryId,
             StockStatus stockStatus, Pageable pageable) {
         User owner = currentUserService.currentUser();
-        return productRepository
+        return PageResponse.from(productRepository
                 .findAll(buildFilter(owner, search, categoryId, stockStatus), pageable)
-                .map(ProductResponse::from);
+                .map(ProductResponse::from));
     }
 
     @Transactional(readOnly = true)
     public ProductResponse getProduct(Long id) {
         return ProductResponse.from(findProduct(id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> listPopularProducts(int limit) {
+        User owner = currentUserService.currentUser();
+        int bounded = Math.min(Math.max(limit, 1), 20);
+        return saleRepository.findTopSoldProducts(owner, PageRequest.of(0, bounded))
+                .stream()
+                .map(ProductResponse::from)
+                .toList();
     }
 
     @Transactional

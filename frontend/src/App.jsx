@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
 import AuthPage from './pages/AuthPage'
+import AdminPage from './pages/admin/AdminPage'
 import DashboardPage from './pages/dashboard/DashboardPage'
 import InventoryPage from './pages/inventory/InventoryPage'
 import ProductFormPage from './pages/products/ProductFormPage'
@@ -19,7 +21,36 @@ function ProtectedRoute({ children }) {
   return children
 }
 
+function AdminRoute({ children }) {
+  if (!auth.isAdmin()) {
+    return <Navigate to="/" replace />
+  }
+  return children
+}
+
 function App() {
+  const [ready, setReady] = useState(!auth.isAuthenticated())
+
+  useEffect(() => {
+    if (!auth.isAuthenticated()) return
+    let cancelled = false
+    auth
+      .me()
+      .catch(() => {
+        // session expired — api.js redirects to /login
+      })
+      .finally(() => {
+        if (!cancelled) setReady(true)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (!ready) {
+    return null
+  }
+
   return (
     <BrowserRouter>
       <Routes>
@@ -40,6 +71,11 @@ function App() {
           <Route path="sales/:id" element={<SaleDetailPage />} />
           <Route path="reports" element={<ReportsPage />} />
           <Route path="settings" element={<SettingsPage />} />
+          <Route path="admin" element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
+          } />
         </Route>
       </Routes>
     </BrowserRouter>

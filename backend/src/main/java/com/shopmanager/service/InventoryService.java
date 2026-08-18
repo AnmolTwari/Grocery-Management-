@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.inventory.AdjustmentRequest;
 import com.shopmanager.dto.inventory.StockInRequest;
 import com.shopmanager.dto.inventory.StockMovementResponse;
@@ -59,13 +60,13 @@ public class InventoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<StockMovementResponse> listMovements(Long productId, Pageable pageable) {
+    public PageResponse<StockMovementResponse> listMovements(Long productId, Pageable pageable) {
         User owner = currentUserService.currentUser();
         Page<StockMovement> page = productId == null
                 ? stockMovementRepository.findByProduct_Owner(owner, pageable)
                 : stockMovementRepository.findByProduct_OwnerAndProductId(owner, productId,
                         pageable);
-        return page.map(StockMovementResponse::from);
+        return PageResponse.from(page.map(StockMovementResponse::from));
     }
 
     private StockMovement saveMovement(Product product, MovementType type,

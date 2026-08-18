@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useParams } from 'react-router-dom'
+import { IconArrowLeft } from '../../components/icons'
 import { getSale } from '../../services/sales'
 import { formatCurrency, formatDateTime, toNumber } from '../../utils/format'
 import { UNIT_LABELS } from '../../utils/units'
@@ -56,14 +57,15 @@ export default function SaleDetailPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Sale #{sale.id}</h1>
+      <div className="flex flex-col gap-1">
         <Link
           to="/sales"
-          className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+          className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
-          ← Back to Sales
+          <IconArrowLeft size={16} />
+          Back to Sales
         </Link>
+        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Sale #{sale.id}</h1>
       </div>
 
       {justCompleted && (

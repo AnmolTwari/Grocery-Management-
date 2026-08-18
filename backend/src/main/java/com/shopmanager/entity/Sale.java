@@ -71,10 +71,6 @@ public class Sale {
         return id;
     }
 
-    public User getOwner() {
-        return owner;
-    }
-
     public List<SaleItem> getItems() {
         return Collections.unmodifiableList(items);
     }

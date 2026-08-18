@@ -1,10 +1,10 @@
 package com.shopmanager.controller;
 
+import java.util.List;
 import java.util.Set;
 
 import jakarta.validation.Valid;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.product.ProductRequest;
 import com.shopmanager.dto.product.ProductResponse;
 import com.shopmanager.entity.StockStatus;
@@ -41,7 +42,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public Page<ProductResponse> listProducts(
+    public PageResponse<ProductResponse> listProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) StockStatus stockStatus,
@@ -49,6 +50,12 @@ public class ProductController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "id,desc") String sort) {
         return productService.listProducts(search, categoryId, stockStatus, toPageable(page, size, sort));
+    }
+
+    @GetMapping("/popular")
+    public List<ProductResponse> popularProducts(
+            @RequestParam(defaultValue = "8") int limit) {
+        return productService.listPopularProducts(limit);
     }
 
     @GetMapping("/{id}")

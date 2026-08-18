@@ -121,10 +121,6 @@ public class Product {
         return id;
     }
 
-    public User getOwner() {
-        return owner;
-    }
-
     public String getName() {
         return name;
     }

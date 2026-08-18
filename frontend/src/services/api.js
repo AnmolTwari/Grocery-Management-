@@ -2,6 +2,7 @@ const API_PREFIX = '/api'
 const LOGGED_IN_KEY = 'logged_in'
 
 let csrfToken = null
+let currentUser = null
 
 function setLoggedIn() {
   localStorage.setItem(LOGGED_IN_KEY, '1')
@@ -9,6 +10,12 @@ function setLoggedIn() {
 
 function clearLoggedIn() {
   localStorage.removeItem(LOGGED_IN_KEY)
+  currentUser = null
+}
+
+function applyUser(data) {
+  currentUser = data && data.username ? data : null
+  return data
 }
 
 function getCsrfToken() {
@@ -67,6 +74,23 @@ async function doRequest(path, { method = 'GET', body, retried = false, ...optio
 
 const inFlight = new Map()
 
+const CACHE_TTL_MS = 30 * 1000
+const cache = new Map()
+
+function readCache(path) {
+  const entry = cache.get(path)
+  if (!entry) return undefined
+  if (entry.expiresAt <= Date.now()) {
+    cache.delete(path)
+    return undefined
+  }
+  return entry.data
+}
+
+function invalidateAll() {
+  cache.clear()
+}
+
 function request(path, options = {}) {
   const { method = 'GET', retried = false } = options
   const key = `${method} ${path}`
@@ -81,7 +105,10 @@ function request(path, options = {}) {
     inFlight.set(key, promise)
     return promise
   }
-  return doRequest(path, options)
+  return doRequest(path, options).then((data) => {
+    invalidateAll()
+    return data
+  })
 }
 
 async function buildError(response) {
@@ -113,11 +140,11 @@ export const auth = {
   login: async (username, password) => {
     const data = await request('/auth/login', { method: 'POST', body: { username, password } })
     setLoggedIn()
-    return data
+    return applyUser(data)
   },
 
-  register: (username, password) =>
-    request('/auth/register', { method: 'POST', body: { username, password } }),
+  register: (username, password, email) =>
+    request('/auth/register', { method: 'POST', body: { username, password, email } }),
 
   logout: async () => {
     try {
@@ -128,14 +155,32 @@ export const auth = {
     clearLoggedIn()
   },
 
-  me: () => request('/auth/me'),
+  me: async () => {
+    const data = await request('/auth/me')
+    return applyUser(data)
+  },
+
+  getCurrentUser: () => currentUser,
+
+  isAdmin: () => Boolean(currentUser && currentUser.role === 'ADMIN'),
 
   isAuthenticated: () => localStorage.getItem(LOGGED_IN_KEY) === '1',
 }
 
 export const api = {
-  get: (path) => request(path),
+  get: (path) => {
+    const hit = readCache(path)
+    if (hit !== undefined) {
+      return Promise.resolve(hit)
+    }
+    return request(path).then((data) => {
+      cache.set(path, { data, expiresAt: Date.now() + CACHE_TTL_MS })
+      return data
+    })
+  },
   post: (path, body) => request(path, { method: 'POST', body }),
   put: (path, body) => request(path, { method: 'PUT', body }),
+  patch: (path, body) => request(path, { method: 'PATCH', body }),
   delete: (path) => request(path, { method: 'DELETE' }),
+  clearCache: invalidateAll,
 }

@@ -26,6 +26,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.product.ProductRequest;
 import com.shopmanager.dto.product.ProductResponse;
 import com.shopmanager.entity.Category;
@@ -83,6 +84,30 @@ class ProductServiceTest {
             BigDecimal minStock) {
         return new ProductRequest(name, 5L, "Amul", sku, Unit.PIECE,
                 new BigDecimal("20.00"), new BigDecimal("25.00"), currentQty, minStock, true);
+    }
+
+    @Test
+    void listPopularProductsReturnsTopSoldMapped() {
+        Product other = new Product(owner, "Bread", category, "Britannia", "BRD-1", Unit.PIECE,
+                new BigDecimal("15.00"), new BigDecimal("20.00"),
+                new BigDecimal("20"), new BigDecimal("5"), true);
+        ReflectionTestUtils.setField(other, "id", 2L);
+        when(saleRepository.findTopSoldProducts(owner, PageRequest.of(0, 8)))
+                .thenReturn(java.util.List.of(product, other));
+
+        List<ProductResponse> popular = productService.listPopularProducts(8);
+
+        assertThat(popular).hasSize(2);
+        assertThat(popular.get(0).name()).isEqualTo("Milk");
+        assertThat(popular.get(1).name()).isEqualTo("Bread");
+        verify(saleRepository).findTopSoldProducts(owner, PageRequest.of(0, 8));
+    }
+
+    @Test
+    void listPopularProductsCapsLimit() {
+        productService.listPopularProducts(999);
+
+        verify(saleRepository).findTopSoldProducts(owner, PageRequest.of(0, 20));
     }
 
     @Test
@@ -188,11 +213,11 @@ class ProductServiceTest {
         when(productRepository.findAll(any(Specification.class), any(Pageable.class)))
                 .thenReturn(new PageImpl<>(List.of(product), pageable, 1));
 
-        Page<ProductResponse> page =
+        PageResponse<ProductResponse> page =
                 productService.listProducts("milk", null, null, pageable);
 
-        assertThat(page.getTotalElements()).isEqualTo(1);
-        assertThat(page.getContent().getFirst().name()).isEqualTo("Milk");
+        assertThat(page.totalElements()).isEqualTo(1);
+        assertThat(page.content().getFirst().name()).isEqualTo("Milk");
     }
 
     @Test

@@ -22,6 +22,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.inventory.AdjustmentRequest;
 import com.shopmanager.dto.inventory.StockInRequest;
 import com.shopmanager.dto.inventory.StockMovementResponse;
@@ -125,10 +126,10 @@ class InventoryServiceTest {
         when(stockMovementRepository.findByProduct_Owner(owner, pageable))
                 .thenReturn(new PageImpl<>(List.of(movement), pageable, 1));
 
-        Page<StockMovementResponse> page = inventoryService.listMovements(null, pageable);
+        PageResponse<StockMovementResponse> page = inventoryService.listMovements(null, pageable);
 
-        assertThat(page.getTotalElements()).isEqualTo(1);
-        assertThat(page.getContent().getFirst().newQuantity()).isEqualByComparingTo("15");
+        assertThat(page.totalElements()).isEqualTo(1);
+        assertThat(page.content().getFirst().newQuantity()).isEqualByComparingTo("15");
         verify(stockMovementRepository).findByProduct_Owner(owner, pageable);
     }
 
@@ -140,10 +141,10 @@ class InventoryServiceTest {
         when(stockMovementRepository.findByProduct_OwnerAndProductId(owner, 1L, pageable))
                 .thenReturn(new PageImpl<>(List.of(movement), pageable, 1));
 
-        Page<StockMovementResponse> page = inventoryService.listMovements(1L, pageable);
+        PageResponse<StockMovementResponse> page = inventoryService.listMovements(1L, pageable);
 
-        assertThat(page.getTotalElements()).isEqualTo(1);
-        assertThat(page.getContent().getFirst().type()).isEqualTo(MovementType.ADJUSTMENT);
+        assertThat(page.totalElements()).isEqualTo(1);
+        assertThat(page.content().getFirst().type()).isEqualTo(MovementType.ADJUSTMENT);
         verify(stockMovementRepository).findByProduct_OwnerAndProductId(owner, 1L, pageable);
     }
 }

@@ -13,7 +13,10 @@ import java.util.Date;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret:defaultSecretKeyThatIsAtLeast32CharactersLongForHS256}")
+    private static final String DEFAULT_SECRET =
+            "shopManagerSystemSecretKey2024MustBeAtLeast32CharsForHS256Algorithm";
+
+    @Value("${jwt.secret:shopManagerSystemSecretKey2024MustBeAtLeast32CharsForHS256Algorithm}")
     private String secret;
 
     @Value("${jwt.expiration:86400000}")
@@ -23,6 +26,11 @@ public class JwtService {
 
     @PostConstruct
     public void init() {
+        if (DEFAULT_SECRET.equals(secret)) {
+            throw new IllegalStateException(
+                    "JWT_SECRET is not set. Set a strong random JWT_SECRET in the backend .env "
+                            + "before starting the app (e.g. 64 random characters).");
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes());
     }
 

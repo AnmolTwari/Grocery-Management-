@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import RefreshButton from '../../components/RefreshButton'
+import { api } from '../../services/api'
 import { listSales } from '../../services/sales'
 import { formatCurrency, formatDateTime } from '../../utils/format'
 
@@ -10,6 +12,7 @@ export default function SalesPage() {
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [reload, setReload] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -32,7 +35,12 @@ export default function SalesPage() {
     return () => {
       cancelled = true
     }
-  }, [page])
+  }, [page, reload])
+
+  function handleRefresh() {
+    api.clearCache()
+    setReload((n) => n + 1)
+  }
 
   const isEmpty = sales && sales.content.length === 0
 
@@ -40,12 +48,15 @@ export default function SalesPage() {
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Sales</h1>
-        <Link
-          to="/sales/new"
-          className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
-        >
-          ＋ New Sale
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <RefreshButton onClick={handleRefresh} disabled={loading} />
+          <Link
+            to="/sales/new"
+            className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+          >
+            ＋ New Sale
+          </Link>
+        </div>
       </div>
 
       {error && (

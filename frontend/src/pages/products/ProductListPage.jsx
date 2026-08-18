@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { IconEdit, IconTrash } from '../../components/icons'
+import RefreshButton from '../../components/RefreshButton'
 import StockStatusBadge from '../../components/StockStatusBadge'
+import { api } from '../../services/api'
 import { listCategories } from '../../services/categories'
 import { listProducts, removeProduct } from '../../services/products'
 import { formatCurrency } from '../../utils/format'
@@ -90,16 +92,24 @@ export default function ProductListPage() {
 
   const isEmpty = products && products.content.length === 0
 
+  function handleRefresh() {
+    api.clearCache()
+    setReload((value) => value + 1)
+  }
+
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Products</h1>
-        <Link
-          to="/products/new"
-          className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
-        >
-          Add Product
-        </Link>
+        <div className="flex shrink-0 items-center gap-2">
+          <RefreshButton onClick={handleRefresh} disabled={loading} />
+          <Link
+            to="/products/new"
+            className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+          >
+            Add Product
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col gap-2 min-[481px]:flex-row min-[481px]:flex-wrap">

@@ -1,7 +1,9 @@
 package com.shopmanager.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -68,5 +70,43 @@ class SettingsServiceTest {
         assertThatThrownBy(() -> settingsService.changePassword("wrong", "new-pass"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Current password");
+    }
+
+    @Test
+    void changeEmailNormalizesAndSaves() {
+        String email = settingsService.changeEmail("  Shop@Example.com ");
+
+        assertThat(email).isEqualTo("shop@example.com");
+        assertThat(owner.getEmail()).isEqualTo("shop@example.com");
+        verify(userRepository).save(owner);
+        verify(userDetailsService).evictUser(owner);
+    }
+
+    @Test
+    void changeEmailRejectsBlank() {
+        assertThatThrownBy(() -> settingsService.changeEmail("   "))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("valid email");
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void changeEmailRejectsDuplicate() {
+        when(userRepository.existsByEmailIgnoreCase("shop@example.com")).thenReturn(true);
+
+        assertThatThrownBy(() -> settingsService.changeEmail("Shop@Example.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("already registered");
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    void changeEmailRejectsSameEmail() {
+        owner.setEmail("shop@example.com");
+
+        assertThatThrownBy(() -> settingsService.changeEmail("shop@example.com"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("different");
+        verify(userRepository, never()).save(any(User.class));
     }
 }

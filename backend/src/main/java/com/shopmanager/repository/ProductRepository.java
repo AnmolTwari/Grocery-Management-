@@ -29,6 +29,9 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     long countByOwnerAndActiveTrue(User owner);
 
 
+    long countByOwner(User owner);
+
+
     @Query("select count(p) from Product p where p.owner = :owner"
             + " and p.active = true"
             + " and p.currentQuantity > 0 and p.currentQuantity <= p.minimumStockLevel")
@@ -38,4 +41,16 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Query("select count(p) from Product p where p.owner = :owner"
             + " and p.active = true and p.currentQuantity <= 0")
     long countOutOfStock(@Param("owner") User owner);
+
+
+    long countByActiveTrue();
+
+
+    @Query("select count(p) from Product p where p.active = true"
+            + " and p.currentQuantity > 0 and p.currentQuantity <= p.minimumStockLevel")
+    long countLowStockAll();
+
+
+    @Query("select count(p) from Product p where p.active = true and p.currentQuantity <= 0")
+    long countOutOfStockAll();
 }

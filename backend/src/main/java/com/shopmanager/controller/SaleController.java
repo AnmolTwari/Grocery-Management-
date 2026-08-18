@@ -4,7 +4,6 @@ import java.util.Set;
 
 import jakarta.validation.Valid;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.sale.SaleRequest;
 import com.shopmanager.dto.sale.SaleResponse;
 import com.shopmanager.dto.sale.SaleSummaryResponse;
@@ -43,7 +43,7 @@ public class SaleController {
     }
 
     @GetMapping
-    public Page<SaleSummaryResponse> listSales(
+    public PageResponse<SaleSummaryResponse> listSales(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(defaultValue = "createdAt,desc") String sort) {

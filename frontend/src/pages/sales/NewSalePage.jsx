@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { IconArrowLeft } from '../../components/icons'
 import StockStatusBadge from '../../components/StockStatusBadge'
 import { createSale } from '../../services/sales'
-import { listProducts } from '../../services/products'
+import { listPopularProducts, listProducts } from '../../services/products'
 import { formatCurrency, toNumber } from '../../utils/format'
 import { UNIT_LABELS } from '../../utils/units'
 
@@ -13,6 +14,8 @@ export default function NewSalePage() {
   const [results, setResults] = useState([])
   const [searching, setSearching] = useState(false)
   const [selected, setSelected] = useState([])
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [popular, setPopular] = useState(null)
 
   const [lines, setLines] = useState([])
   const [submitting, setSubmitting] = useState(false)
@@ -45,6 +48,20 @@ export default function NewSalePage() {
     }
   }, [search])
 
+  useEffect(() => {
+    let cancelled = false
+    listPopularProducts()
+      .then((data) => {
+        if (!cancelled) setPopular(data)
+      })
+      .catch(() => {
+        if (!cancelled) setPopular([])
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   function addProducts(products) {
     setError(null)
     setSuccess(null)
@@ -75,8 +92,9 @@ export default function NewSalePage() {
 
   function addProduct(product) {
     addProducts([product])
-    setSearch('')
   }
+
+  const visibleProducts = search.trim() ? results : (popular ?? [])
 
   function toggleSelect(productId) {
     setSelected((current) =>
@@ -87,7 +105,7 @@ export default function NewSalePage() {
   }
 
   function toggleSelectAll() {
-    const selectable = results
+    const selectable = visibleProducts
       .filter((product) => Number(product.currentQuantity) > 0)
       .map((product) => product.id)
     setSelected((current) => {
@@ -99,7 +117,7 @@ export default function NewSalePage() {
   }
 
   function addSelected() {
-    const products = results.filter((product) => selected.includes(product.id))
+    const products = visibleProducts.filter((product) => selected.includes(product.id))
     addProducts(products)
     setSelected([])
     setSearch('')
@@ -120,7 +138,7 @@ export default function NewSalePage() {
   }
 
   const bagTotal = lines.reduce((sum, line) => sum + lineTotal(line), 0)
-  const selectableResults = results.filter((product) => Number(product.currentQuantity) > 0)
+  const selectableResults = visibleProducts.filter((product) => Number(product.currentQuantity) > 0)
 
   async function completeSale() {
     setError(null)
@@ -157,14 +175,15 @@ export default function NewSalePage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">New Sale</h1>
+      <div className="flex flex-col gap-1">
         <Link
           to="/sales"
-          className="inline-flex min-h-10 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+          className="inline-flex w-fit items-center gap-1.5 text-sm font-semibold text-primary hover:underline"
         >
-          ← Back to Sales
+          <IconArrowLeft size={16} />
+          Back to Sales
         </Link>
+        <h1 className="text-center text-lg min-[481px]:text-xl md:text-2xl">New Sale</h1>
       </div>
 
       {error && (
@@ -181,91 +200,75 @@ export default function NewSalePage() {
       <div className="rounded-lg border border-border bg-surface p-4 shadow-sm md:p-6">
         <h2 className="mb-4 text-base font-semibold">Add items</h2>
         <div className="flex flex-col gap-2 min-[481px]:flex-row min-[481px]:flex-wrap">
-          <input
-            type="search"
-            className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary min-[481px]:min-w-40 min-[481px]:flex-1"
-            placeholder="Search products by name or SKU…"
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value)
-              setSelected([])
-            }}
-          />
-        </div>
+          <div className="relative w-full min-[481px]:flex-1">
+            <input
+              type="search"
+              className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+              placeholder="Search products by name or SKU…"
+              value={search}
+              onFocus={() => setDropdownOpen(true)}
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') setDropdownOpen(false)
+              }}
+              onChange={(event) => {
+                setSearch(event.target.value)
+                setSelected([])
+                setDropdownOpen(Boolean(event.target.value.trim()))
+              }}
+            />
 
-        {searching && <p className="mt-2 text-secondary">Searching…</p>}
-        {!searching && search.trim() && results.length === 0 && (
-          <p className="mt-2 text-secondary">No products match “{search.trim()}”.</p>
-        )}
-        {results.length > 0 && (
-          <>
-            <div className="mt-2 flex flex-col gap-2 min-[481px]:flex-row min-[481px]:items-center min-[481px]:justify-between">
-              <label className="flex cursor-pointer items-center gap-2 text-sm text-secondary">
-                <input
-                  type="checkbox"
-                  className="h-4 w-4 shrink-0 cursor-pointer accent-primary"
-                  checked={
-                    selectableResults.length > 0 &&
-                    selectableResults.every((product) => selected.includes(product.id))
-                  }
-                  disabled={selectableResults.length === 0}
-                  onChange={toggleSelectAll}
-                />
-                Select all ({selectableResults.length})
-              </label>
-              <button
-                type="button"
-                className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-3 py-1 text-[13px] font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
-                disabled={selected.length === 0}
-                onClick={addSelected}
-              >
-                Add selected ({selected.length})
-              </button>
-            </div>
-            <ul className="m-0 mt-2 list-none overflow-hidden rounded-sm border border-border p-0">
-              {results.map((product) => {
-                const outOfStock = Number(product.currentQuantity) <= 0
-                const isSelected = selected.includes(product.id)
-                return (
-                  <li
-                    className={`flex items-start justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0 md:items-center ${isSelected ? 'bg-primary-light/60' : 'bg-surface'}`}
-                    key={product.id}
-                  >
-                    <div className="flex flex-1 items-start gap-3 md:items-center">
-                      <input
-                        type="checkbox"
-                        className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-primary disabled:cursor-not-allowed md:mt-0"
-                        checked={isSelected}
-                        disabled={outOfStock}
-                        onChange={() => toggleSelect(product.id)}
-                        aria-label={`Select ${product.name}`}
+            {dropdownOpen && (
+              <>
+                <div className="fixed inset-0" aria-hidden="true" onClick={() => setDropdownOpen(false)} />
+                <div className="absolute inset-x-0 top-full z-10 mt-2 overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
+                  {search.trim() ? (
+                    searching ? (
+                      <p className="m-0 p-4 text-sm text-secondary">Searching…</p>
+                    ) : results.length === 0 ? (
+                      <p className="m-0 p-4 text-sm text-secondary">No products match “{search.trim()}”.</p>
+                    ) : (
+                      <ProductSuggestions
+                        products={results}
+                        selected={selected}
+                        lines={lines}
+                        selectableResults={selectableResults}
+                        onToggle={toggleSelect}
+                        onToggleAll={toggleSelectAll}
+                        onAddSelected={addSelected}
+                        onAdd={addProduct}
                       />
-                      <div>
-                        <div className="font-semibold">{product.name}</div>
-                        <div className="text-xs text-secondary">
-                          {product.brand ? `${product.brand} · ` : ''}
-                          {product.currentQuantity} {UNIT_LABELS[product.unit] ?? product.unit} ·{' '}
-                          {formatCurrency(product.sellingPrice)}
-                        </div>
+                    )
+                  ) : (
+                    <>
+                      <div className="border-b border-border bg-bg px-3 py-2">
+                        <div className="text-sm font-semibold">Popular products</div>
+                        <div className="text-xs text-secondary">Top sellers — click to add</div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 whitespace-nowrap">
-                      <StockStatusBadge status={product.stockStatus} />
-                      <button
-                        type="button"
-                        className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-3 py-1 text-[13px] font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
-                        disabled={outOfStock}
-                        onClick={() => addProduct(product)}
-                      >
-                        {outOfStock ? 'Out of stock' : 'Add'}
-                      </button>
-                    </div>
-                  </li>
-                )
-              })}
-            </ul>
-          </>
-        )}
+                      {popular === null ? (
+                        <p className="m-0 p-4 text-sm text-secondary">Loading…</p>
+                      ) : popular.length === 0 ? (
+                        <p className="m-0 p-4 text-sm text-secondary">
+                          No popular products yet. Search to add items.
+                        </p>
+                      ) : (
+                        <ProductSuggestions
+                          products={popular}
+                          selected={selected}
+                          lines={lines}
+                          selectableResults={selectableResults}
+                          onToggle={toggleSelect}
+                          onToggleAll={toggleSelectAll}
+                          onAddSelected={addSelected}
+                          onAdd={addProduct}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className="rounded-lg border border-border bg-surface p-4 shadow-sm md:p-6">
@@ -359,5 +362,85 @@ export default function NewSalePage() {
         </div>
       </div>
     </div>
+  )
+}
+
+function ProductSuggestions({ products, selected, lines, selectableResults, onToggle, onToggleAll, onAddSelected, onAdd }) {
+  return (
+    <>
+      <ul className="m-0 max-h-[45vh] list-none overflow-y-auto p-0 min-[481px]:max-h-72">
+        {products.map((product) => {
+          const outOfStock = Number(product.currentQuantity) <= 0
+          const isSelected = selected.includes(product.id)
+          const inSale = lines.some((line) => line.productId === product.id)
+          return (
+            <li
+              className={`flex items-start justify-between gap-3 border-b border-border px-3 py-2 last:border-b-0 md:items-center ${isSelected ? 'bg-primary-light/60' : 'bg-surface'}`}
+              key={product.id}
+            >
+              <div className="flex flex-1 items-start gap-3 md:items-center">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-primary disabled:cursor-not-allowed md:mt-0"
+                  checked={isSelected}
+                  disabled={outOfStock}
+                  onChange={() => onToggle(product.id)}
+                  aria-label={`Select ${product.name}`}
+                />
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold">{product.name}</span>
+                    {inSale && (
+                      <span className="rounded-full bg-primary-light px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap text-[#166534]">
+                        ✓ In sale
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-secondary">
+                    {product.brand ? `${product.brand} · ` : ''}
+                    {product.currentQuantity} {UNIT_LABELS[product.unit] ?? product.unit} ·{' '}
+                    {formatCurrency(product.sellingPrice)}
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 whitespace-nowrap">
+                <StockStatusBadge status={product.stockStatus} />
+                <button
+                  type="button"
+                  className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-3 py-1 text-[13px] font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+                  disabled={outOfStock}
+                  onClick={() => onAdd(product)}
+                >
+                  {outOfStock ? 'Out of stock' : inSale ? 'Add more' : 'Add'}
+                </button>
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border bg-bg px-3 py-2">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-secondary">
+          <input
+            type="checkbox"
+            className="h-4 w-4 shrink-0 cursor-pointer accent-primary"
+            checked={
+              selectableResults.length > 0 &&
+              selectableResults.every((product) => selected.includes(product.id))
+            }
+            disabled={selectableResults.length === 0}
+            onChange={onToggleAll}
+          />
+          Select all ({selectableResults.length})
+        </label>
+        <button
+          type="button"
+          className="inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-3 py-1 text-[13px] font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0"
+          disabled={selected.length === 0}
+          onClick={onAddSelected}
+        >
+          Add selected ({selected.length})
+        </button>
+      </div>
+    </>
   )
 }

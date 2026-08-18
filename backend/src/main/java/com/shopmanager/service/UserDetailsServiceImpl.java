@@ -23,15 +23,17 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String identifier) throws UsernameNotFoundException {
         long now = System.currentTimeMillis();
-        CacheEntry entry = cache.get(username);
+        CacheEntry entry = cache.get(identifier);
         if (entry != null && now - entry.loadedAtMillis() < TTL_MILLIS) {
             return entry.details();
         }
-        UserDetails details = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
-        cache.put(username, new CacheEntry(details, now));
+        String lookup = identifier.trim();
+        UserDetails details = userRepository.findByUsernameIgnoreCase(lookup)
+                .or(() -> userRepository.findByEmailIgnoreCase(lookup))
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + identifier));
+        cache.put(identifier, new CacheEntry(details, now));
         return details;
     }
 
@@ -39,5 +41,13 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if (username != null) {
             cache.remove(username);
         }
+    }
+
+    public void evictUser(com.shopmanager.entity.User user) {
+        if (user == null) {
+            return;
+        }
+        evict(user.getUsername());
+        evict(user.getEmail());
     }
 }

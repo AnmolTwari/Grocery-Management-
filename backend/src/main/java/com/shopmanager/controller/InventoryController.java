@@ -4,7 +4,6 @@ import java.util.Set;
 
 import jakarta.validation.Valid;
 
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.shopmanager.dto.common.PageResponse;
 import com.shopmanager.dto.inventory.AdjustmentRequest;
 import com.shopmanager.dto.inventory.StockInRequest;
 import com.shopmanager.dto.inventory.StockMovementResponse;
@@ -49,7 +49,7 @@ public class InventoryController {
     }
 
     @GetMapping("/movements")
-    public Page<StockMovementResponse> listMovements(
+    public PageResponse<StockMovementResponse> listMovements(
             @RequestParam(required = false) Long productId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size,

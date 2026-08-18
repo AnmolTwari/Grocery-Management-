@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -75,6 +76,15 @@ class DashboardServiceTest {
                 .thenReturn(new BigDecimal("78.00"));
         when(saleRepository.sumEstimatedProfitSince(any(User.class), any(LocalDateTime.class)))
                 .thenReturn(new BigDecimal("21.00"));
+        when(saleRepository.countByOwnerAndCreatedAtBetween(any(User.class),
+                any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(2L);
+        when(saleRepository.sumTotalAmountBetween(any(User.class), any(LocalDateTime.class),
+                any(LocalDateTime.class)))
+                .thenReturn(new BigDecimal("150.00"));
+        when(saleRepository.sumDailyRevenue(any(User.class), any(LocalDateTime.class)))
+                .thenReturn(java.util.Collections.singletonList(
+                        new Object[] { LocalDate.now(), new BigDecimal("78.00") }));
         when(productRepository.countByOwnerAndActiveTrue(any(User.class))).thenReturn(2L);
         when(productRepository.countLowStock(any(User.class))).thenReturn(1L);
         when(productRepository.countOutOfStock(any(User.class))).thenReturn(0L);
@@ -84,9 +94,16 @@ class DashboardServiceTest {
         assertThat(summary.salesToday()).isEqualTo(1L);
         assertThat(summary.revenueToday()).isEqualByComparingTo(new BigDecimal("78.00"));
         assertThat(summary.profitToday()).isEqualByComparingTo(new BigDecimal("21.00"));
+        assertThat(summary.salesYesterday()).isEqualTo(2L);
+        assertThat(summary.revenueYesterday()).isEqualByComparingTo(new BigDecimal("150.00"));
         assertThat(summary.totalProducts()).isEqualTo(2L);
         assertThat(summary.lowStockCount()).isEqualTo(1L);
         assertThat(summary.outOfStockCount()).isZero();
+        assertThat(summary.dailyRevenue()).hasSize(7);
+        assertThat(summary.dailyRevenue().getFirst().total()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(summary.dailyRevenue().getLast().date()).isEqualTo(LocalDate.now());
+        assertThat(summary.dailyRevenue().getLast().total())
+                .isEqualByComparingTo(new BigDecimal("78.00"));
         assertThat(summary.recentSales()).hasSize(1);
         assertThat(summary.recentSales().getFirst().totalAmount())
                 .isEqualByComparingTo(new BigDecimal("78.00"));
@@ -103,6 +120,14 @@ class DashboardServiceTest {
                 .thenReturn(BigDecimal.ZERO);
         when(saleRepository.sumEstimatedProfitSince(any(User.class), any(LocalDateTime.class)))
                 .thenReturn(BigDecimal.ZERO);
+        when(saleRepository.countByOwnerAndCreatedAtBetween(any(User.class),
+                any(LocalDateTime.class), any(LocalDateTime.class)))
+                .thenReturn(0L);
+        when(saleRepository.sumTotalAmountBetween(any(User.class), any(LocalDateTime.class),
+                any(LocalDateTime.class)))
+                .thenReturn(BigDecimal.ZERO);
+        when(saleRepository.sumDailyRevenue(any(User.class), any(LocalDateTime.class)))
+                .thenReturn(List.of());
         when(productRepository.countByOwnerAndActiveTrue(any(User.class))).thenReturn(0L);
         when(productRepository.countLowStock(any(User.class))).thenReturn(0L);
         when(productRepository.countOutOfStock(any(User.class))).thenReturn(0L);
@@ -111,6 +136,9 @@ class DashboardServiceTest {
 
         assertThat(summary.salesToday()).isZero();
         assertThat(summary.revenueToday()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThat(summary.dailyRevenue()).hasSize(7);
+        assertThat(summary.dailyRevenue())
+                .allMatch(point -> point.total().compareTo(BigDecimal.ZERO) == 0);
         assertThat(summary.recentSales()).isEmpty();
     }
 }

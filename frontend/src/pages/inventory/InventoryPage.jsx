@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import RefreshButton from '../../components/RefreshButton'
+import { api } from '../../services/api'
 import { listProducts } from '../../services/products'
 import { adjustStock, listMovements, stockIn } from '../../services/inventory'
 import { formatDateTime, toNumber } from '../../utils/format'
@@ -15,7 +17,7 @@ export default function InventoryPage() {
   const [movements, setMovements] = useState(null)
 
   const [mode, setMode] = useState('STOCK_IN')
-  const [form, setForm] = useState({ productId: '', quantity: '', reason: '' })
+  const [form, setForm] = useState({ productId: '', quantity: '' })
   const [submitting, setSubmitting] = useState(false)
 
   const [filterProductId, setFilterProductId] = useState('')
@@ -73,9 +75,7 @@ export default function InventoryPage() {
     if (nextMode === mode) return
     setMode(nextMode)
     setForm((current) => ({ ...current, quantity: '' }))
-  }
-
-  const setField = (field) => (event) =>
+  }  const setField = (field) => (event) =>
     setForm((current) => ({ ...current, [field]: event.target.value }))
 
   async function handleSubmit(event) {
@@ -98,11 +98,10 @@ export default function InventoryPage() {
       return
     }
 
-    const reason = form.reason.trim() || null
     const payload =
       mode === 'STOCK_IN'
-        ? { productId, quantity, reason }
-        : { productId, newQuantity: quantity, reason }
+        ? { productId, quantity }
+        : { productId, newQuantity: quantity }
 
     setSubmitting(true)
     try {
@@ -111,15 +110,20 @@ export default function InventoryPage() {
       } else {
         await adjustStock(payload)
       }
-      setForm((current) => ({ ...current, quantity: '', reason: '' }))
+      setForm((current) => ({ ...current, quantity: '' }))
       setPage(0)
-      setSuccess(mode === 'STOCK_IN' ? 'Stock added.' : 'Stock adjusted.')
+      setSuccess(mode === 'STOCK_IN' ? 'Stock added.' : 'Stock updated.')
       setReload((value) => value + 1)
     } catch (err) {
       setError(err.message)
     } finally {
       setSubmitting(false)
     }
+  }
+
+  function handleRefresh() {
+    api.clearCache()
+    setReload((value) => value + 1)
   }
 
   const isEmpty = movements && movements.content.length === 0
@@ -142,23 +146,23 @@ export default function InventoryPage() {
       )}
 
       <div
-        className="flex w-full overflow-hidden rounded-sm border border-border md:w-auto"
+        className="flex w-full gap-1 rounded-lg border border-border bg-bg p-1 md:w-auto"
         role="tablist"
         aria-label="Stock operation"
       >
         <button
           type="button"
-          className={`min-h-10 flex-1 cursor-pointer border-none bg-surface px-4 py-2 text-sm font-semibold transition-colors hover:bg-bg md:min-h-0 md:flex-none ${mode === 'STOCK_IN' ? 'bg-primary text-white' : 'text-secondary'}`}
+          className={`min-h-10 flex-1 cursor-pointer rounded-md border-none px-4 py-2 text-sm font-semibold transition-colors md:flex-none ${mode === 'STOCK_IN' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface'}`}
           onClick={() => switchMode('STOCK_IN')}
         >
-          ＋ Stock In
+          ＋ Add Stock
         </button>
         <button
           type="button"
-          className={`min-h-10 flex-1 cursor-pointer border-none bg-surface px-4 py-2 text-sm font-semibold transition-colors hover:bg-bg md:min-h-0 md:flex-none ${mode === 'ADJUSTMENT' ? 'bg-primary text-white' : 'text-secondary'}`}
+          className={`min-h-10 flex-1 cursor-pointer rounded-md border-none px-4 py-2 text-sm font-semibold transition-colors md:flex-none ${mode === 'ADJUSTMENT' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface'}`}
           onClick={() => switchMode('ADJUSTMENT')}
         >
-          Adjust Stock
+          Update Stock
         </button>
       </div>
 
@@ -194,6 +198,7 @@ export default function InventoryPage() {
               type="number"
               min={mode === 'STOCK_IN' ? '0.001' : '0'}
               step="any"
+              placeholder={mode === 'STOCK_IN' ? 'e.g. 20' : 'e.g. 100'}
               value={form.quantity}
               onChange={setField('quantity')}
               required
@@ -204,38 +209,32 @@ export default function InventoryPage() {
               </small>
             )}
           </div>
-
-          <div className="col-span-full flex flex-col gap-1">
-            <label className="text-sm font-semibold" htmlFor="inventory-reason">
-              Reason
-            </label>
-            <input
-              id="inventory-reason"
-              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
-              placeholder="e.g. Purchase, damaged items"
-              value={form.reason}
-              onChange={setField('reason')}
-              maxLength={200}
-            />
-          </div>
         </div>
 
-        <div className="mt-6 flex flex-col-reverse gap-2 md:flex-row md:justify-end">
+        <div className="mt-6 flex justify-end">
           <button
             type="submit"
             className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0 md:w-auto"
             disabled={submitting}
           >
-            {submitting ? 'Saving…' : mode === 'STOCK_IN' ? 'Add Stock' : 'Save Adjustment'}
+            {submitting
+              ? mode === 'STOCK_IN'
+                ? 'Adding…'
+                : 'Updating…'
+              : mode === 'STOCK_IN'
+                ? 'Add Stock'
+                : 'Update Stock'}
           </button>
         </div>
       </form>
 
-      <h2 className="m-0 text-base font-semibold">Movement history</h2>
-
-      <div className="flex flex-col gap-2 min-[481px]:flex-row min-[481px]:flex-wrap">
+      <div className="flex flex-col gap-2 min-[481px]:flex-row min-[481px]:items-center min-[481px]:justify-between">
+        <div className="flex items-center gap-2">
+          <h2 className="m-0 text-base font-semibold">Movement history</h2>
+          <RefreshButton onClick={handleRefresh} disabled={loading} />
+        </div>
         <select
-          className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary min-[481px]:min-w-40 min-[481px]:flex-1"
+          className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary min-[481px]:w-52"
           value={filterProductId}
           onChange={(event) => {
             setPage(0)
@@ -253,7 +252,7 @@ export default function InventoryPage() {
 
       {isEmpty && !loading && (
         <div className="rounded-lg border border-border bg-surface p-8 text-center text-secondary shadow-sm">
-          <p>No stock movements yet. Use a form above to add or adjust stock.</p>
+          <p>No stock movements yet. Use the form above to add or update stock.</p>
         </div>
       )}
 

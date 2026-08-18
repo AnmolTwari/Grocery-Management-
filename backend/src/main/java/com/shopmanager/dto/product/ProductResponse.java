@@ -1,7 +1,6 @@
 package com.shopmanager.dto.product;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 import com.shopmanager.entity.Product;
 import com.shopmanager.entity.StockStatus;
@@ -21,9 +20,7 @@ public record ProductResponse(
         BigDecimal currentQuantity,
         BigDecimal minimumStockLevel,
         StockStatus stockStatus,
-        boolean active,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt) {
+        boolean active) {
 
     public static ProductResponse from(Product product) {
         return new ProductResponse(
@@ -39,8 +36,6 @@ public record ProductResponse(
                 product.getCurrentQuantity(),
                 product.getMinimumStockLevel(),
                 product.stockStatus(),
-                product.isActive(),
-                product.getCreatedAt(),
-                product.getUpdatedAt());
+                product.isActive());
     }
 }

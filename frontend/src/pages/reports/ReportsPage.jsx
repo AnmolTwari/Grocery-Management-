@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import RefreshButton from '../../components/RefreshButton'
+import { api } from '../../services/api'
 import { getReportSummary } from '../../services/reports'
 import { formatCurrency } from '../../utils/format'
 
@@ -16,6 +18,7 @@ export default function ReportsPage() {
   const [report, setReport] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [reload, setReload] = useState(0)
 
   useEffect(() => {
     let cancelled = false
@@ -34,7 +37,12 @@ export default function ReportsPage() {
     return () => {
       cancelled = true
     }
-  }, [from, to])
+  }, [from, to, reload])
+
+  function handleRefresh() {
+    api.clearCache()
+    setReload((n) => n + 1)
+  }
 
   const tiles = report
     ? [
@@ -49,6 +57,7 @@ export default function ReportsPage() {
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Reports</h1>
+        <RefreshButton onClick={handleRefresh} disabled={loading} />
       </div>
 
       <div className="flex max-w-none flex-col gap-3 rounded-lg border border-border bg-surface p-4 shadow-sm md:max-w-[480px] md:flex-row md:gap-4 md:p-6">

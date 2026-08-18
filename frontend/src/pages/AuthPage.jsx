@@ -9,6 +9,7 @@ export default function AuthPage({ mode }) {
   const justRegistered = Boolean(location.state?.registered)
 
   const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -25,6 +26,12 @@ export default function AuthPage({ mode }) {
     const name = username.trim()
     if (name.length < 3 || name.length > 50) {
       errors.username = 'Username must be 3–50 characters.'
+    }
+    if (isRegister) {
+      const mail = email.trim()
+      if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+        errors.email = 'Enter a valid email address.'
+      }
     }
     if (password.length < 6) {
       errors.password = 'Password must be at least 6 characters.'
@@ -44,7 +51,7 @@ export default function AuthPage({ mode }) {
     setLoading(true)
     try {
       if (isRegister) {
-        await auth.register(username.trim(), password)
+        await auth.register(username.trim(), password, email.trim() || undefined)
         navigate('/login', { replace: true, state: { registered: true } })
       } else {
         await auth.login(username.trim(), password)
@@ -77,7 +84,7 @@ export default function AuthPage({ mode }) {
         <p className="mb-6 text-sm text-secondary">
           {isRegister
             ? 'Register once and manage your shop’s products, stock and sales.'
-            : 'Welcome back. Sign in to manage your shop.'}
+            : 'Welcome back. Sign in with your username or email.'}
         </p>
 
         {error && (
@@ -95,15 +102,15 @@ export default function AuthPage({ mode }) {
         <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold" htmlFor="username">
-              Username
+              {isRegister ? 'Username' : 'Username or email'}
             </label>
             <input
               id="username"
               className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="text"
-              autoComplete="username"
+              autoComplete={isRegister ? 'username' : 'username'}
               autoFocus
-              placeholder="e.g. mohan_sweets"
+              placeholder={isRegister ? 'e.g. mohan_sweets' : 'Your username or email'}
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               aria-invalid={Boolean(fieldErrors.username)}
@@ -112,6 +119,27 @@ export default function AuthPage({ mode }) {
               <span className="text-[13px] text-danger">{fieldErrors.username}</span>
             )}
           </div>
+
+          {isRegister && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-semibold" htmlFor="email">
+                Email <span className="font-normal text-secondary">(optional)</span>
+              </label>
+              <input
+                id="email"
+                className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                type="email"
+                autoComplete="email"
+                placeholder="e.g. you@shop.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                aria-invalid={Boolean(fieldErrors.email)}
+              />
+              {fieldErrors.email && (
+                <span className="text-[13px] text-danger">{fieldErrors.email}</span>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-col gap-1">
             <label className="text-sm font-semibold" htmlFor="password">

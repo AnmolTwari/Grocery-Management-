@@ -1,21 +1,35 @@
 import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { auth } from '../services/api'
+import {
+  IconBox,
+  IconCart,
+  IconChart,
+  IconInventory,
+  IconLayout,
+  IconLogout,
+  IconSettings,
+  IconShield,
+} from './icons'
 
 const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', end: true },
-  { to: '/products', label: 'Products' },
-  { to: '/inventory', label: 'Inventory' },
-  { to: '/sales', label: 'Sales' },
-  { to: '/reports', label: 'Reports' },
-  { to: '/settings', label: 'Settings' },
+  { to: '/', label: 'Dashboard', end: true, Icon: IconLayout },
+  { to: '/products', label: 'Products', Icon: IconBox },
+  { to: '/inventory', label: 'Inventory', Icon: IconInventory },
+  { to: '/sales', label: 'Sales', Icon: IconCart },
+  { to: '/reports', label: 'Reports', Icon: IconChart },
+  { to: '/settings', label: 'Settings', Icon: IconSettings },
 ]
 
 const NAV_LINK_BASE =
-  'block rounded-sm px-3 py-3 text-[15px] font-medium text-secondary transition-colors hover:bg-bg hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary md:py-2'
+  'group flex items-center gap-2.5 rounded-sm px-3 py-3 text-[15px] font-medium text-secondary transition-colors hover:bg-bg hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary md:py-2'
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const navItems = auth.isAdmin()
+    ? [...NAV_ITEMS, { to: '/admin', label: 'Admin', Icon: IconShield }]
+    : NAV_ITEMS
 
   function closeMenu() {
     setMenuOpen(false)
@@ -57,17 +71,22 @@ export default function Layout() {
           className={`${menuOpen ? 'flex' : 'hidden'} flex-col gap-1 pt-2 md:flex md:gap-0 md:pt-0`}
         >
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
-            {NAV_ITEMS.map((item) => (
+            {navItems.map((item) => (
               <li key={item.label}>
                 <NavLink
                   to={item.to}
                   end={item.end}
                   onClick={closeMenu}
                   className={({ isActive }) =>
-                    `${NAV_LINK_BASE}${isActive ? ' bg-primary-light font-semibold text-primary' : ''}`
+                    `${NAV_LINK_BASE}${
+                      isActive
+                        ? ' border-l-2 border-primary bg-primary-light font-semibold text-primary'
+                        : ' border-l-2 border-transparent'
+                    }`
                   }
                 >
-                  {item.label}
+                  <item.Icon size={18} />
+                  <span>{item.label}</span>
                 </NavLink>
               </li>
             ))}
@@ -75,9 +94,10 @@ export default function Layout() {
           <div className="mt-2 border-t border-border pt-2 md:mt-auto md:pt-4">
             <button
               onClick={handleLogout}
-              className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold no-underline transition-colors hover:bg-bg disabled:opacity-60 md:min-h-0 md:justify-start"
+              className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2.5 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold no-underline transition-colors hover:bg-bg disabled:opacity-60 md:min-h-0 md:justify-start"
             >
-              ← Logout
+              <IconLogout size={16} />
+              Logout
             </button>
           </div>
         </nav>

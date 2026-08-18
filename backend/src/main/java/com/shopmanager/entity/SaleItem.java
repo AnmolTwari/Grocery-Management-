@@ -56,14 +56,6 @@ public class SaleItem {
         this.purchasePrice = purchasePrice;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public Sale getSale() {
-        return sale;
-    }
-
     void setSale(Sale sale) {
         this.sale = sale;
     }
