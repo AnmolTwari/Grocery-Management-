@@ -91,6 +91,7 @@ public class ProductService {
                 request.unit(),
                 request.purchasePrice(),
                 request.sellingPrice(),
+                request.mrp(),
                 defaultValue(request.currentQuantity()),
                 defaultValue(request.minimumStockLevel()),
                 request.active() == null || request.active());
@@ -111,6 +112,7 @@ public class ProductService {
         product.setUnit(request.unit());
         product.setPurchasePrice(request.purchasePrice());
         product.setSellingPrice(request.sellingPrice());
+        product.setMrp(request.mrp());
         product.setCurrentQuantity(defaultValue(request.currentQuantity()));
         product.setMinimumStockLevel(defaultValue(request.minimumStockLevel()));
         product.setActive(request.active() == null || request.active());

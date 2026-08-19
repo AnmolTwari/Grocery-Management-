@@ -24,6 +24,7 @@ const EMPTY_FORM = {
   unit: 'PIECE',
   purchasePrice: '',
   sellingPrice: '',
+  mrp: '',
   currentQuantity: '0',
   minimumStockLevel: '0',
   active: true,
@@ -59,6 +60,7 @@ export default function ProductFormPage() {
             unit: product.unit,
             purchasePrice: String(product.purchasePrice),
             sellingPrice: String(product.sellingPrice),
+            mrp: product.mrp != null ? String(product.mrp) : '',
             currentQuantity: String(product.currentQuantity),
             minimumStockLevel: String(product.minimumStockLevel),
             active: product.active,
@@ -116,6 +118,7 @@ export default function ProductFormPage() {
         unit: form.unit,
         purchasePrice: toNumber(form.purchasePrice),
         sellingPrice: toNumber(form.sellingPrice),
+        mrp: form.mrp ? toNumber(form.mrp) : null,
         currentQuantity: toNumber(form.currentQuantity),
         minimumStockLevel: toNumber(form.minimumStockLevel),
         active: form.active,
@@ -145,7 +148,7 @@ export default function ProductFormPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">
+        <h1 className="text-lg font-semibold min-[481px]:text-xl md:text-2xl">
           {isEdit ? 'Edit Product' : 'Add Product'}
         </h1>
       </div>
@@ -276,6 +279,22 @@ export default function ProductFormPage() {
               value={form.sellingPrice}
               onChange={setField('sellingPrice')}
               required
+            />
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold" htmlFor="mrp">
+              MRP <span className="font-normal text-secondary">(max retail price)</span>
+            </label>
+            <input
+              id="mrp"
+              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.mrp}
+              onChange={setField('mrp')}
+              placeholder="e.g. 30"
             />
           </div>
 

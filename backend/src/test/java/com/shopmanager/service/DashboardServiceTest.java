@@ -59,7 +59,7 @@ class DashboardServiceTest {
     void summaryCombinesTodayCountersAndRecentSales() {
         Category category = new Category(owner, "Dairy");
         Product product = new Product(owner, "Milk", category, null, "MILK-1", Unit.PIECE,
-                new BigDecimal("19.00"), new BigDecimal("26.00"),
+                new BigDecimal("19.00"), new BigDecimal("26.00"), null,
                 new BigDecimal("15"), new BigDecimal("5"), true);
         Sale sale = new Sale(owner,
                 List.of(new SaleItem(product, new BigDecimal("3"), new BigDecimal("26.00"),

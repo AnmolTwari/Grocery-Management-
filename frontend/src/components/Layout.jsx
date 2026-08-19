@@ -22,7 +22,7 @@ const NAV_ITEMS = [
 ]
 
 const NAV_LINK_BASE =
-  'group flex items-center gap-2.5 rounded-sm px-3 py-3 text-[15px] font-medium text-secondary transition-colors hover:bg-bg hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary md:py-2'
+  'group flex items-center gap-3 rounded-lg px-3 py-2.5 text-[15px] font-medium text-secondary transition-colors hover:bg-bg hover:text-text focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary'
 
 export default function Layout() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -42,18 +42,18 @@ export default function Layout() {
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="sticky top-0 z-10 flex w-full shrink-0 flex-col items-stretch gap-0 border-b border-border bg-surface px-3 py-2 shadow-sm md:static md:w-[232px] md:border-b-0 md:border-r md:gap-6 md:px-4 md:py-4 md:shadow-none">
+      <aside className="sticky top-0 z-10 flex w-full shrink-0 flex-col items-stretch gap-0 border-b border-border bg-surface px-3 py-2 shadow-sm md:static md:w-60 md:border-b-0 md:border-r md:gap-6 md:px-4 md:py-5 md:shadow-none">
         <div className="flex w-full items-center justify-between gap-2">
-          <div className="flex items-center justify-center pb-2 md:pb-0">
+          <div className="flex items-center justify-center pb-2 md:pb-1">
             <img
               src="/logo.png"
               alt="ShopManager logo"
-              className="h-11 w-auto max-w-full shrink-0 object-contain [filter:drop-shadow(0_2px_8px_rgba(15,23,42,0.18))] md:h-20"
+              className="h-11 w-auto max-w-full shrink-0 object-contain [filter:drop-shadow(0_2px_8px_rgba(15,23,42,0.18))] md:h-16"
             />
           </div>
           <button
             type="button"
-            className="menu-toggle inline-flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-1 rounded-sm border-none bg-transparent hover:bg-bg md:hidden"
+            className="menu-toggle inline-flex h-10 w-10 cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-none bg-transparent hover:bg-bg md:hidden"
             aria-label={menuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
@@ -68,7 +68,7 @@ export default function Layout() {
         <nav
           id="mobile-nav"
           aria-label="Main navigation"
-          className={`${menuOpen ? 'flex' : 'hidden'} flex-col gap-1 pt-2 md:flex md:gap-0 md:pt-0`}
+          className={`${menuOpen ? 'flex' : 'hidden'} flex-col gap-1 pt-2 md:flex md:gap-1 md:pt-0`}
         >
           <ul className="m-0 flex list-none flex-col gap-1 p-0">
             {navItems.map((item) => (
@@ -80,8 +80,8 @@ export default function Layout() {
                   className={({ isActive }) =>
                     `${NAV_LINK_BASE}${
                       isActive
-                        ? ' border-l-2 border-primary bg-primary-light font-semibold text-primary'
-                        : ' border-l-2 border-transparent'
+                        ? ' bg-primary-light font-semibold text-primary'
+                        : ''
                     }`
                   }
                 >
@@ -91,10 +91,10 @@ export default function Layout() {
               </li>
             ))}
           </ul>
-          <div className="mt-2 border-t border-border pt-2 md:mt-auto md:pt-4">
+          <div className="mt-3 border-t border-border pt-3 md:mt-auto md:pt-4">
             <button
               onClick={handleLogout}
-              className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2.5 rounded-sm border border-border bg-surface px-3 py-1 text-[13px] font-semibold no-underline transition-colors hover:bg-bg disabled:opacity-60 md:min-h-0 md:justify-start"
+              className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2.5 rounded-lg border border-border bg-surface px-3 py-2 text-[13px] font-semibold no-underline transition-colors hover:bg-[#fef2f2] hover:text-danger disabled:opacity-60 md:min-h-0 md:justify-start"
             >
               <IconLogout size={16} />
               Logout

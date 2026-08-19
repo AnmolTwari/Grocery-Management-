@@ -59,6 +59,9 @@ public class Product {
     @Column(name = "selling_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal sellingPrice;
 
+    @Column(precision = 12, scale = 2)
+    private BigDecimal mrp;
+
 
     @Column(name = "current_quantity", nullable = false, precision = 12, scale = 3)
     private BigDecimal currentQuantity;
@@ -80,7 +83,7 @@ public class Product {
     }
 
     public Product(User owner, String name, Category category, String brand, String sku, Unit unit,
-            BigDecimal purchasePrice, BigDecimal sellingPrice,
+            BigDecimal purchasePrice, BigDecimal sellingPrice, BigDecimal mrp,
             BigDecimal currentQuantity, BigDecimal minimumStockLevel, boolean active) {
         this.owner = owner;
         this.name = name;
@@ -90,6 +93,7 @@ public class Product {
         this.unit = unit;
         this.purchasePrice = purchasePrice;
         this.sellingPrice = sellingPrice;
+        this.mrp = mrp;
         this.currentQuantity = currentQuantity;
         this.minimumStockLevel = minimumStockLevel;
         this.active = active;
@@ -175,6 +179,14 @@ public class Product {
 
     public void setSellingPrice(BigDecimal sellingPrice) {
         this.sellingPrice = sellingPrice;
+    }
+
+    public BigDecimal getMrp() {
+        return mrp;
+    }
+
+    public void setMrp(BigDecimal mrp) {
+        this.mrp = mrp;
     }
 
     public BigDecimal getCurrentQuantity() {

@@ -56,7 +56,7 @@ export default function ReportsPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Reports</h1>
+        <h1 className="text-lg font-semibold min-[481px]:text-xl md:text-2xl">Reports</h1>
         <RefreshButton onClick={handleRefresh} disabled={loading} />
       </div>
 

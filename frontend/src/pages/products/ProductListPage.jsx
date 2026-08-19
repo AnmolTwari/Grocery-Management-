@@ -124,7 +124,7 @@ export default function ProductListPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Products</h1>
+        <h1 className="text-lg font-semibold min-[481px]:text-xl md:text-2xl">Products</h1>
         <div className="flex shrink-0 items-center gap-2">
           <RefreshButton onClick={handleRefresh} disabled={loading} />
           <Link
@@ -190,7 +190,7 @@ export default function ProductListPage() {
       )}
 
       {isEmpty && !loading && (
-        <div className="rounded-lg border border-border bg-surface p-8 text-center text-secondary shadow-sm">
+        <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center text-secondary shadow-sm md:p-14">
           <p>No products found. Add your first product.</p>
         </div>
       )}
@@ -198,7 +198,7 @@ export default function ProductListPage() {
       {products && !isEmpty && (
         <>
           <div className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
-            <table className="w-full min-w-[600px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
+            <table className="w-full min-w-[600px] border-collapse [&_thead_tr]:bg-bg [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
               <thead>
                 <tr>
                   <th
@@ -209,6 +209,9 @@ export default function ProductListPage() {
                   </th>
                   <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
                     Category
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    MRP
                   </th>
                   <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
                     Selling Price
@@ -238,7 +241,25 @@ export default function ProductListPage() {
                       {product.categoryName}
                     </td>
                     <td className="border-b border-border p-3 text-left align-middle">
+                      {product.mrp != null ? (
+                        <span className="text-secondary">{formatCurrency(product.mrp)}</span>
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                    </td>
+                    <td className="border-b border-border p-3 text-left align-middle whitespace-nowrap">
                       {formatCurrency(product.sellingPrice)}
+                      {product.mrp != null &&
+                        Number(product.mrp) > Number(product.sellingPrice) && (
+                          <span className="ml-2 rounded-full bg-primary-light px-2 py-0.5 text-[11px] font-semibold text-[#166534]">
+                            {Math.round(
+                              ((Number(product.mrp) - Number(product.sellingPrice)) /
+                                Number(product.mrp)) *
+                                100,
+                            )}
+                            % off
+                          </span>
+                        )}
                     </td>
                     <td className="border-b border-border p-3 text-left align-middle">
                       {product.currentQuantity} {UNIT_LABELS[product.unit] ?? product.unit}

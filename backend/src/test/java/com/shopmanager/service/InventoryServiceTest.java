@@ -61,7 +61,7 @@ class InventoryServiceTest {
         when(currentUserService.currentUser()).thenReturn(owner);
         Category category = new Category(owner, "Dairy");
         product = new Product(owner, "Milk", category, "Amul", "MILK-1", Unit.PIECE,
-                new BigDecimal("20.00"), new BigDecimal("25.00"),
+                new BigDecimal("20.00"), new BigDecimal("25.00"), null,
                 new BigDecimal("10"), new BigDecimal("5"), true);
         ReflectionTestUtils.setField(product, "id", 1L);
     }

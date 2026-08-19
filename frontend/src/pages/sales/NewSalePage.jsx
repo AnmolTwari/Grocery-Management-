@@ -185,7 +185,7 @@ export default function NewSalePage() {
           <IconArrowLeft size={16} />
           Back to Sales
         </Link>
-        <h1 className="text-center text-lg min-[481px]:text-xl md:text-2xl">New Sale</h1>
+        <h1 className="text-center text-lg font-semibold min-[481px]:text-xl md:text-2xl">New Sale</h1>
       </div>
 
       {error && (
@@ -282,7 +282,7 @@ export default function NewSalePage() {
           </p>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[600px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
+            <table className="w-full min-w-[600px] border-collapse [&_thead_tr]:bg-bg [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
               <thead>
                 <tr>
                   <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
@@ -401,6 +401,9 @@ function ProductSuggestions({ products, selected, lines, selectableResults, onTo
                   <div className="text-xs text-secondary">
                     {product.brand ? `${product.brand} · ` : ''}
                     {product.currentQuantity} {UNIT_LABELS[product.unit] ?? product.unit} ·{' '}
+                    {product.mrp != null && product.mrp > 0 && (
+                      <span className="text-muted line-through">{formatCurrency(product.mrp)} </span>
+                    )}
                     {formatCurrency(product.sellingPrice)}
                   </div>
                 </div>

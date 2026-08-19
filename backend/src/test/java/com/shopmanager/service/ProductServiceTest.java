@@ -75,7 +75,7 @@ class ProductServiceTest {
         category = new Category(owner, "Dairy");
         ReflectionTestUtils.setField(category, "id", 5L);
         product = new Product(owner, "Milk", category, "Amul", "MILK-1", Unit.PIECE,
-                new BigDecimal("20.00"), new BigDecimal("25.00"),
+                new BigDecimal("20.00"), new BigDecimal("25.00"), null,
                 new BigDecimal("10"), new BigDecimal("5"), true);
         ReflectionTestUtils.setField(product, "id", 1L);
     }
@@ -83,13 +83,13 @@ class ProductServiceTest {
     private ProductRequest request(String name, String sku, BigDecimal currentQty,
             BigDecimal minStock) {
         return new ProductRequest(name, 5L, "Amul", sku, Unit.PIECE,
-                new BigDecimal("20.00"), new BigDecimal("25.00"), currentQty, minStock, true);
+                new BigDecimal("20.00"), new BigDecimal("25.00"), null, currentQty, minStock, true);
     }
 
     @Test
     void listPopularProductsReturnsTopSoldMapped() {
         Product other = new Product(owner, "Bread", category, "Britannia", "BRD-1", Unit.PIECE,
-                new BigDecimal("15.00"), new BigDecimal("20.00"),
+                new BigDecimal("15.00"), new BigDecimal("20.00"), null,
                 new BigDecimal("20"), new BigDecimal("5"), true);
         ReflectionTestUtils.setField(other, "id", 2L);
         when(saleRepository.findTopSoldProducts(owner, PageRequest.of(0, 8)))
@@ -232,6 +232,6 @@ class ProductServiceTest {
 
     private Product productWithStock(BigDecimal qty, BigDecimal min) {
         return new Product(owner, "X", category, null, null, Unit.PIECE,
-                BigDecimal.ONE, BigDecimal.ONE, qty, min, true);
+                BigDecimal.ONE, BigDecimal.ONE, null, qty, min, true);
     }
 }

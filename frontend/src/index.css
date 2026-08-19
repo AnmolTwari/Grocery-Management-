@@ -21,8 +21,12 @@
     'Segoe UI', sans-serif;
 
   --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
 
-  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.06);
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.08);
+  --shadow-md: 0 4px 8px -2px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
+  --shadow-lg: 0 12px 24px -6px rgba(15, 23, 42, 0.14), 0 4px 8px -4px rgba(15, 23, 42, 0.08);
 
   --breakpoint-md: 45rem;
 }
@@ -41,6 +45,7 @@
   h2,
   h3 {
     line-height: 1.25;
+    letter-spacing: -0.01em;
   }
 
   p {
@@ -50,6 +55,18 @@
   a {
     color: var(--color-info);
     text-decoration: none;
+  }
+
+  input,
+  select,
+  textarea {
+    transition: border-color 150ms ease, box-shadow 150ms ease,
+      background-color 150ms ease;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-muted);
   }
 
   ::selection {

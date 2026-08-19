@@ -87,7 +87,7 @@ export default function AuthPage({ mode }) {
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] bg-[radial-gradient(1200px_500px_at_50%_-10%,var(--color-primary-light),transparent_70%)] min-[481px]:gap-6 min-[481px]:pb-6">
-      <div className="w-full max-w-[400px] rounded-lg border border-border bg-surface p-5 shadow-[0_4px_12px_rgba(15,23,42,0.08)] min-[481px]:p-8">
+      <div className="w-full max-w-[400px] rounded-lg border border-border bg-surface p-5 shadow-lg min-[481px]:p-8">
         <div className="mb-5 flex justify-center min-[481px]:mb-8">
           <img
             src="/logo.png"

@@ -143,7 +143,7 @@ export default function AdminPage() {
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Admin</h1>
+        <h1 className="text-lg font-semibold min-[481px]:text-xl md:text-2xl">Admin</h1>
         <RefreshButton onClick={handleRefresh} disabled={loading} />
       </div>
 
@@ -283,14 +283,14 @@ export default function AdminPage() {
       <div>
         <h2 className="mb-3 text-base font-semibold">Users</h2>
         {isEmpty && !loading && (
-          <div className="rounded-lg border border-border bg-surface p-8 text-center text-secondary shadow-sm">
+          <div className="rounded-lg border border-dashed border-border bg-surface p-10 text-center text-secondary shadow-sm md:p-14">
             <p>No users yet.</p>
           </div>
         )}
 
         {users && !isEmpty && (
           <div className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
-            <table className="w-full min-w-[800px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
+            <table className="w-full min-w-[800px] border-collapse [&_thead_tr]:bg-bg [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
               <thead>
                 <tr>
                   <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">

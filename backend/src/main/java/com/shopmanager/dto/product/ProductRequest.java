@@ -35,6 +35,9 @@ public record ProductRequest(
         @DecimalMin(value = "0.00", message = "Selling price cannot be negative")
         BigDecimal sellingPrice,
 
+        @DecimalMin(value = "0.00", message = "MRP cannot be negative")
+        BigDecimal mrp,
+
         @DecimalMin(value = "0.00", message = "Current quantity cannot be negative")
         BigDecimal currentQuantity,
 

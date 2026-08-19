@@ -241,12 +241,12 @@ export default function DashboardPage() {
                 </>
               )
               const className =
-                'flex min-w-0 flex-col gap-2.5 rounded-lg border border-border bg-surface p-3 shadow-sm md:gap-3 md:p-4'
+                'flex min-w-0 flex-col gap-2.5 rounded-lg border border-border bg-surface p-3 shadow-sm transition-[transform,box-shadow,border-color] duration-200 md:gap-3 md:p-4'
               return card.to ? (
                 <Link
                   to={card.to}
                   key={card.label}
-                  className={`${className} cursor-pointer transition-colors hover:border-primary hover:bg-bg`}
+                  className={`${className} cursor-pointer hover:-translate-y-0.5 hover:border-primary hover:shadow-md`}
                 >
                   {content}
                 </Link>
@@ -315,7 +315,7 @@ export default function DashboardPage() {
               <p className="text-secondary">No sales recorded yet.</p>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[600px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
+                <table className="w-full min-w-[600px] border-collapse [&_thead_tr]:bg-bg [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
                   <thead>
                     <tr>
                       <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">

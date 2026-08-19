@@ -65,7 +65,7 @@ export default function SaleDetailPage() {
           <IconArrowLeft size={16} />
           Back to Sales
         </Link>
-        <h1 className="text-lg min-[481px]:text-xl md:text-2xl">Sale #{sale.id}</h1>
+        <h1 className="text-lg font-semibold min-[481px]:text-xl md:text-2xl">Sale #{sale.id}</h1>
       </div>
 
       {justCompleted && (
@@ -77,7 +77,7 @@ export default function SaleDetailPage() {
       <p className="m-0 text-sm text-secondary">{formatDateTime(sale.createdAt)}</p>
 
       <div className="overflow-x-auto rounded-lg border border-border bg-surface shadow-sm">
-        <table className="w-full min-w-[600px] border-collapse [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
+        <table className="w-full min-w-[600px] border-collapse [&_thead_tr]:bg-bg [&_tbody_tr:last-child_td]:border-b-0 [&_tbody_tr:hover]:bg-bg md:min-w-0">
           <thead>
             <tr>
               <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
