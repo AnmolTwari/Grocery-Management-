@@ -16,7 +16,7 @@ import com.shopmanager.entity.User;
 
 public interface SaleRepository extends JpaRepository<Sale, Long> {
 
-    @EntityGraph(attributePaths = "items")
+    @EntityGraph(attributePaths = { "items", "items.product" })
     Page<Sale> findByOwner(User owner, Pageable pageable);
 
     @EntityGraph(attributePaths = { "items", "items.product" })

@@ -12,7 +12,7 @@ import {
   IconTrendUp,
 } from '../../components/icons'
 import { getDashboardSummary } from '../../services/dashboard'
-import { formatCurrency, formatDateTime } from '../../utils/format'
+import { formatCurrency, formatDateTime, formatRelativeTime } from '../../utils/format'
 import { api, auth } from '../../services/api'
 
 function greeting() {
@@ -302,7 +302,15 @@ export default function DashboardPage() {
           </div>
 
           <div className="rounded-lg border border-border bg-surface p-4 shadow-sm md:p-6">
-            <h2 className="mb-4 text-base font-semibold">Recent Sales</h2>
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <h2 className="text-base font-semibold">Recent Sales</h2>
+              <Link
+                to="/sales"
+                className="text-sm font-semibold text-primary hover:underline"
+              >
+                View all →
+              </Link>
+            </div>
             {summary.recentSales.length === 0 ? (
               <p className="text-secondary">No sales recorded yet.</p>
             ) : (
@@ -316,10 +324,10 @@ export default function DashboardPage() {
                       <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
                         Items
                       </th>
-                      <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                      <th className="border-b border-border p-3 text-right align-middle text-xs font-semibold tracking-wider text-muted uppercase">
                         Total
                       </th>
-                      <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                      <th className="border-b border-border p-3 text-right align-middle text-xs font-semibold tracking-wider text-muted uppercase">
                         Time
                       </th>
                     </tr>
@@ -335,14 +343,25 @@ export default function DashboardPage() {
                             Sale #{sale.id}
                           </Link>
                         </td>
-                        <td className="border-b border-border p-3 text-left align-middle">
-                          {sale.itemCount}
+                        <td className="border-b border-border p-3 text-left align-middle text-secondary">
+                          {sale.items.length === 0 ? (
+                            `${sale.itemCount} item${sale.itemCount > 1 ? 's' : ''}`
+                          ) : (
+                            <span title={sale.items.join(', ')}>
+                              {sale.items.slice(0, 2).join(', ')}
+                              {sale.items.length > 2 && (
+                                <span className="text-muted"> +{sale.items.length - 2} more</span>
+                              )}
+                            </span>
+                          )}
                         </td>
-                        <td className="border-b border-border p-3 text-left align-middle font-semibold">
+                        <td className="border-b border-border p-3 text-right align-middle font-semibold whitespace-nowrap">
                           {formatCurrency(sale.totalAmount)}
                         </td>
-                        <td className="border-b border-border p-3 text-left align-middle text-secondary">
-                          {formatDateTime(sale.createdAt)}
+                        <td className="border-b border-border p-3 text-right align-middle text-secondary whitespace-nowrap">
+                          <span title={formatDateTime(sale.createdAt)}>
+                            {formatRelativeTime(sale.createdAt)}
+                          </span>
                         </td>
                       </tr>
                     ))}
