@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { IconEdit, IconTrash } from '../../components/icons'
 import RefreshButton from '../../components/RefreshButton'
 import StockStatusBadge from '../../components/StockStatusBadge'
@@ -19,9 +19,13 @@ const STOCK_STATUS_OPTIONS = [
 ]
 
 export default function ProductListPage() {
+  const [searchParams] = useSearchParams()
   const [search, setSearch] = useState('')
   const [categoryId, setCategoryId] = useState('')
-  const [stockStatus, setStockStatus] = useState('')
+  const [stockStatus, setStockStatus] = useState(() => {
+    const initial = searchParams.get('stock')
+    return STOCK_STATUS_OPTIONS.some((option) => option.value === initial) ? initial : ''
+  })
   const [page, setPage] = useState(0)
 
   const [categories, setCategories] = useState([])
@@ -30,6 +34,8 @@ export default function ProductListPage() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [reload, setReload] = useState(0)
+  const [removing, setRemoving] = useState(null)
+  const [removingBusy, setRemovingBusy] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -76,17 +82,35 @@ export default function ProductListPage() {
     }
   }, [search, categoryId, stockStatus, page, reload])
 
-  async function handleRemove(product) {
-    const confirmed = window.confirm(
-      `Remove "${product.name}"?\n\nIf it has sale or stock history it will be hidden from the list; otherwise it is deleted permanently.`,
-    )
-    if (!confirmed) return
+  useEffect(() => {
+    function onKeyDown(event) {
+      if (event.key === 'Escape') {
+        setRemoving(null)
+      }
+    }
+    if (removing) {
+      document.addEventListener('keydown', onKeyDown)
+      return () => document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [removing])
+
+  async function confirmRemove() {
+    if (!removing || removingBusy) return
+    setRemovingBusy(true)
     try {
-      await removeProduct(product.id)
-      setSuccess(`"${product.name}" removed.`)
+      const archived = await removeProduct(removing.id)
+      setSuccess(
+        archived
+          ? `"${removing.name}" was removed from the list. Its sale and stock history is kept.`
+          : `"${removing.name}" was deleted permanently.`,
+      )
+      setRemoving(null)
       setReload((value) => value + 1)
     } catch (err) {
       setError(err.message)
+      setRemoving(null)
+    } finally {
+      setRemovingBusy(false)
     }
   }
 
@@ -236,7 +260,7 @@ export default function ProductListPage() {
                         className="mr-2.5 inline-flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-border bg-surface text-danger transition-colors hover:border-danger hover:bg-[#fef2f2] hover:text-danger md:h-8 md:w-8"
                         title={`Remove ${product.name}`}
                         aria-label={`Remove ${product.name}`}
-                        onClick={() => handleRemove(product)}
+                        onClick={() => setRemoving(product)}
                       >
                         <IconTrash />
                       </button>
@@ -274,6 +298,51 @@ export default function ProductListPage() {
       )}
 
       {loading && <p className="text-secondary">Loading…</p>}
+
+      {removing && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onClick={() => !removingBusy && setRemoving(null)}
+        >
+          <div
+            className="w-full max-w-[420px] rounded-lg border border-border bg-surface p-5 shadow-[0_4px_12px_rgba(15,23,42,0.15)] min-[481px]:p-6"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="remove-dialog-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="remove-dialog-title" className="mb-2 text-base font-semibold">
+              Remove &quot;{removing.name}&quot;?
+            </h2>
+            <p className="mb-1 text-sm text-secondary">
+              If this product has sale or stock history, it will only be hidden from your
+              product list — past records stay intact.
+            </p>
+            <p className="mb-5 text-sm text-secondary">
+              If it has no history, it will be deleted permanently and cannot be undone.
+            </p>
+            <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-end">
+              <button
+                type="button"
+                className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-border bg-surface px-4 py-2 text-sm font-semibold text-text transition-colors hover:enabled:bg-bg disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0 md:w-auto"
+                onClick={() => setRemoving(null)}
+                disabled={removingBusy}
+                autoFocus
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="inline-flex min-h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-sm border border-transparent bg-danger px-4 py-2 text-sm font-semibold text-white transition-colors hover:enabled:bg-[#b91c1c] disabled:cursor-not-allowed disabled:opacity-60 md:min-h-0 md:w-auto"
+                onClick={confirmRemove}
+                disabled={removingBusy}
+              >
+                {removingBusy ? 'Removing…' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

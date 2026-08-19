@@ -19,4 +19,7 @@ export const createProduct = (data) => api.post('/products', data)
 
 export const updateProduct = (id, data) => api.put(`/products/${id}`, data)
 
-export const removeProduct = (id) => api.delete(`/products/${id}`)
+export const removeProduct = async (id) => {
+  const result = await api.delete(`/products/${id}`)
+  return Boolean(result && result.archived)
+}

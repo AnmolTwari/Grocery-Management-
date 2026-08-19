@@ -9,6 +9,13 @@ import {
 import { toNumber } from '../../utils/format'
 import { UNIT_LABELS } from '../../utils/units'
 
+const COUNT_UNITS = new Set(['PIECE', 'PACKET', 'BOX', 'BOTTLE'])
+
+function isWholeNumber(value) {
+  const numeric = Number(value)
+  return Number.isFinite(numeric) && Number.isInteger(numeric)
+}
+
 const EMPTY_FORM = {
   name: '',
   categoryId: '',
@@ -92,6 +99,13 @@ export default function ProductFormPage() {
       if (!categoryId) {
         setError('Please select or create a category.')
         return
+      }
+
+      if (COUNT_UNITS.has(form.unit)) {
+        if (!isWholeNumber(form.currentQuantity) || !isWholeNumber(form.minimumStockLevel)) {
+          setError('Quantities must be whole numbers for this product unit.')
+          return
+        }
       }
 
       const payload = {
@@ -274,7 +288,7 @@ export default function ProductFormPage() {
               className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
               min="0"
-              step="any"
+              step={COUNT_UNITS.has(form.unit) ? '1' : 'any'}
               value={form.currentQuantity}
               onChange={setField('currentQuantity')}
             />
@@ -289,7 +303,7 @@ export default function ProductFormPage() {
               className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
               min="0"
-              step="any"
+              step={COUNT_UNITS.has(form.unit) ? '1' : 'any'}
               value={form.minimumStockLevel}
               onChange={setField('minimumStockLevel')}
             />

@@ -3,6 +3,7 @@ package com.shopmanager.service;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import com.shopmanager.dto.product.ProductResponse;
 import com.shopmanager.entity.Category;
 import com.shopmanager.entity.Product;
 import com.shopmanager.entity.StockStatus;
+import com.shopmanager.entity.Unit;
 import com.shopmanager.entity.User;
 import com.shopmanager.exception.DuplicateResourceException;
 import com.shopmanager.exception.ResourceNotFoundException;
@@ -29,6 +31,9 @@ import jakarta.persistence.criteria.Predicate;
 
 @Service
 public class ProductService {
+
+    private static final Set<Unit> COUNT_UNITS =
+            Set.of(Unit.PIECE, Unit.PACKET, Unit.BOX, Unit.BOTTLE);
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -75,6 +80,8 @@ public class ProductService {
     public ProductResponse createProduct(ProductRequest request) {
         User owner = currentUserService.currentUser();
         assertSkuAvailable(owner, request.sku(), null);
+        validateQuantities(request.unit(), defaultValue(request.currentQuantity()),
+                defaultValue(request.minimumStockLevel()));
         Product product = new Product(
                 owner,
                 request.name(),
@@ -95,6 +102,8 @@ public class ProductService {
         User owner = currentUserService.currentUser();
         Product product = findProduct(id);
         assertSkuAvailable(owner, request.sku(), id);
+        validateQuantities(request.unit(), defaultValue(request.currentQuantity()),
+                defaultValue(request.minimumStockLevel()));
         product.setName(request.name());
         product.setCategory(findCategory(owner, request.categoryId()));
         product.setBrand(request.brand());
@@ -110,15 +119,16 @@ public class ProductService {
 
 
     @Transactional
-    public void deleteProduct(Long id) {
+    public boolean deleteProduct(Long id) {
         User owner = currentUserService.currentUser();
         Product product = findProduct(id);
         if (stockMovementRepository.existsByProduct_OwnerAndProductId(owner, id)
                 || saleRepository.existsByOwnerAndItems_Product_Id(owner, id)) {
             product.setActive(false);
-            return;
+            return true;
         }
         productRepository.delete(product);
+        return false;
     }
 
     private Specification<Product> buildFilter(User owner, String search, Long categoryId,
@@ -184,5 +194,20 @@ public class ProductService {
 
     private BigDecimal defaultValue(BigDecimal value) {
         return value == null ? BigDecimal.ZERO : value;
+    }
+
+    private void validateQuantities(Unit unit, BigDecimal currentQuantity,
+            BigDecimal minimumStockLevel) {
+        if (COUNT_UNITS.contains(unit)) {
+            requireWholeNumber(currentQuantity, "Current quantity");
+            requireWholeNumber(minimumStockLevel, "Minimum stock level");
+        }
+    }
+
+    private void requireWholeNumber(BigDecimal value, String label) {
+        if (value.stripTrailingZeros().scale() > 0) {
+            throw new IllegalArgumentException(label
+                    + " must be a whole number for this product unit");
+        }
     }
 }

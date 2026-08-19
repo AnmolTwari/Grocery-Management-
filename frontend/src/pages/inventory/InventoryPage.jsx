@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
 import RefreshButton from '../../components/RefreshButton'
+import StockStatusBadge from '../../components/StockStatusBadge'
 import { api } from '../../services/api'
 import { listProducts } from '../../services/products'
 import { adjustStock, listMovements, stockIn } from '../../services/inventory'
-import { formatDateTime, toNumber } from '../../utils/format'
+import { formatDateTime, formatQuantity, toNumber } from '../../utils/format'
 import { MOVEMENT_TYPE_LABELS, UNIT_LABELS } from '../../utils/units'
 
 const PAGE_SIZE = 20
+
+const COUNT_UNITS = new Set(['PIECE', 'PACKET', 'BOX', 'BOTTLE'])
 
 function quantityLabel(product) {
   return `${product.currentQuantity} ${UNIT_LABELS[product.unit] ?? product.unit}`
@@ -95,6 +98,12 @@ export default function InventoryPage() {
     }
     if (mode === 'ADJUSTMENT' && quantity < 0) {
       setError('Quantity cannot be negative.')
+      return
+    }
+    if (selectedProduct && COUNT_UNITS.has(selectedProduct.unit) && !Number.isInteger(quantity)) {
+      setError(
+        `Quantity must be a whole number (${selectedProduct.unit === 'PIECE' ? 'pieces' : selectedProduct.unit.toLowerCase() + 's'}).`,
+      )
       return
     }
 
@@ -196,8 +205,8 @@ export default function InventoryPage() {
               id="inventory-quantity"
               className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
               type="number"
-              min={mode === 'STOCK_IN' ? '0.001' : '0'}
-              step="any"
+              min={mode === 'STOCK_IN' ? (selectedProduct && COUNT_UNITS.has(selectedProduct.unit) ? '1' : '0.001') : '0'}
+              step={selectedProduct && COUNT_UNITS.has(selectedProduct.unit) ? '1' : 'any'}
               placeholder={mode === 'STOCK_IN' ? 'e.g. 20' : 'e.g. 100'}
               value={form.quantity}
               onChange={setField('quantity')}
@@ -281,7 +290,7 @@ export default function InventoryPage() {
                     New Stock
                   </th>
                   <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
-                    Reason
+                    Status
                   </th>
                 </tr>
               </thead>
@@ -311,16 +320,16 @@ export default function InventoryPage() {
                       </span>
                     </td>
                     <td className="border-b border-border p-3 text-left align-middle">
-                      {movement.previousQuantity} {UNIT_LABELS[movement.unit] ?? movement.unit}
+                      {formatQuantity(movement.previousQuantity)} {UNIT_LABELS[movement.unit] ?? movement.unit}
                     </td>
                     <td className="border-b border-border p-3 text-left align-middle">
                       <ChangeCell value={movement.quantityChanged} unit={UNIT_LABELS[movement.unit] ?? movement.unit} />
                     </td>
                     <td className="border-b border-border p-3 text-left align-middle">
-                      {movement.newQuantity} {UNIT_LABELS[movement.unit] ?? movement.unit}
+                      {formatQuantity(movement.newQuantity)} {UNIT_LABELS[movement.unit] ?? movement.unit}
                     </td>
                     <td className="border-b border-border p-3 text-left align-middle">
-                      {movement.reason}
+                      <StockStatusBadge status={movement.stockStatus} />
                     </td>
                   </tr>
                 ))}
@@ -368,7 +377,7 @@ function ChangeCell({ value, unit }) {
   return (
     <span className={className}>
       {prefix}
-      {numeric} {unit}
+      {formatQuantity(Math.abs(numeric))} {unit}
     </span>
   )
 }

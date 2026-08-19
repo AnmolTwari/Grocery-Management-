@@ -190,7 +190,7 @@ class ProductServiceTest {
                 .thenReturn(false);
         when(saleRepository.existsByOwnerAndItems_Product_Id(owner, 1L)).thenReturn(false);
 
-        productService.deleteProduct(1L);
+        assertThat(productService.deleteProduct(1L)).isFalse();
 
         verify(productRepository).delete(product);
     }
@@ -201,7 +201,7 @@ class ProductServiceTest {
         when(stockMovementRepository.existsByProduct_OwnerAndProductId(owner, 1L))
                 .thenReturn(true);
 
-        productService.deleteProduct(1L);
+        assertThat(productService.deleteProduct(1L)).isTrue();
 
         assertThat(product.isActive()).isFalse();
         verify(productRepository, never()).delete(any(Product.class));

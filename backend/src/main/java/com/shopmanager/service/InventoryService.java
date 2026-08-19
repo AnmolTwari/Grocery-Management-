@@ -1,6 +1,7 @@
 package com.shopmanager.service;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,6 +15,7 @@ import com.shopmanager.dto.inventory.StockMovementResponse;
 import com.shopmanager.entity.MovementType;
 import com.shopmanager.entity.Product;
 import com.shopmanager.entity.StockMovement;
+import com.shopmanager.entity.Unit;
 import com.shopmanager.entity.User;
 import com.shopmanager.exception.ResourceNotFoundException;
 import com.shopmanager.repository.ProductRepository;
@@ -23,6 +25,9 @@ import com.shopmanager.security.CurrentUserService;
 
 @Service
 public class InventoryService {
+
+    private static final Set<Unit> COUNT_UNITS =
+            Set.of(Unit.PIECE, Unit.PACKET, Unit.BOX, Unit.BOTTLE);
 
     private final ProductRepository productRepository;
     private final StockMovementRepository stockMovementRepository;
@@ -40,6 +45,7 @@ public class InventoryService {
     @Transactional
     public StockMovementResponse stockIn(StockInRequest request) {
         Product product = findProduct(request.productId());
+        validateQuantity(product, request.quantity());
         BigDecimal previous = product.getCurrentQuantity();
         BigDecimal updated = previous.add(request.quantity());
         product.setCurrentQuantity(updated);
@@ -51,6 +57,7 @@ public class InventoryService {
     @Transactional
     public StockMovementResponse adjust(AdjustmentRequest request) {
         Product product = findProduct(request.productId());
+        validateQuantity(product, request.newQuantity());
         BigDecimal previous = product.getCurrentQuantity();
         BigDecimal updated = request.newQuantity();
         BigDecimal changed = updated.subtract(previous);
@@ -67,6 +74,15 @@ public class InventoryService {
                 : stockMovementRepository.findByProduct_OwnerAndProductId(owner, productId,
                         pageable);
         return PageResponse.from(page.map(StockMovementResponse::from));
+    }
+
+    private void validateQuantity(Product product, BigDecimal quantity) {
+        if (COUNT_UNITS.contains(product.getUnit())
+                && quantity.stripTrailingZeros().scale() > 0) {
+            throw new IllegalArgumentException("Quantity for "
+                    + product.getUnit().name().toLowerCase()
+                    + " items must be a whole number");
+        }
     }
 
     private StockMovement saveMovement(Product product, MovementType type,

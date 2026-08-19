@@ -1,6 +1,7 @@
 package com.shopmanager.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import jakarta.validation.Valid;
@@ -77,9 +78,9 @@ public class ProductController {
 
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
+    public Map<String, Boolean> deleteProduct(@PathVariable Long id) {
+        boolean archived = productService.deleteProduct(id);
+        return Map.of("archived", archived);
     }
 
     private Pageable toPageable(int page, int size, String sort) {

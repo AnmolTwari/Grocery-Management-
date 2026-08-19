@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ import com.shopmanager.entity.Product;
 import com.shopmanager.entity.Sale;
 import com.shopmanager.entity.SaleItem;
 import com.shopmanager.entity.StockMovement;
+import com.shopmanager.entity.Unit;
 import com.shopmanager.entity.User;
 import com.shopmanager.exception.InsufficientStockException;
 import com.shopmanager.exception.ResourceNotFoundException;
@@ -33,6 +35,9 @@ import com.shopmanager.security.CurrentUserService;
 
 @Service
 public class SaleService {
+
+    private static final Set<Unit> COUNT_UNITS =
+            Set.of(Unit.PIECE, Unit.PACKET, Unit.BOX, Unit.BOTTLE);
 
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
@@ -60,6 +65,7 @@ public class SaleService {
         for (SaleItemRequest line : request.items()) {
             Product product = products.computeIfAbsent(line.productId(), this::findProduct);
             BigDecimal quantity = line.quantity();
+            validateQuantity(product, quantity);
             soldQuantities.merge(product.getId(), quantity, BigDecimal::add);
             items.add(new SaleItem(product, quantity, product.getSellingPrice(),
                     product.getPurchasePrice()));
@@ -98,6 +104,15 @@ public class SaleService {
     private void requireItems(List<SaleItemRequest> items) {
         if (items == null || items.isEmpty()) {
             throw new IllegalArgumentException("A sale must have at least one item");
+        }
+    }
+
+    private void validateQuantity(Product product, BigDecimal quantity) {
+        if (COUNT_UNITS.contains(product.getUnit())
+                && quantity.stripTrailingZeros().scale() > 0) {
+            throw new IllegalArgumentException("Quantity for '" + product.getName()
+                    + "' must be a whole number ("
+                    + product.getUnit().name().toLowerCase() + " items)");
         }
     }
 

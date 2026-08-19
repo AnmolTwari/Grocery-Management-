@@ -7,6 +7,8 @@ import { listPopularProducts, listProducts } from '../../services/products'
 import { formatCurrency, toNumber } from '../../utils/format'
 import { UNIT_LABELS } from '../../utils/units'
 
+const COUNT_UNITS = new Set(['PIECE', 'PACKET', 'BOX', 'BOTTLE'])
+
 export default function NewSalePage() {
   const navigate = useNavigate()
 
@@ -312,8 +314,8 @@ export default function NewSalePage() {
                       <input
                         className="min-h-10 w-[90px] rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
                         type="number"
-                        min="0.001"
-                        step="any"
+                        min={COUNT_UNITS.has(line.unit) ? '1' : '0.001'}
+                        step={COUNT_UNITS.has(line.unit) ? '1' : 'any'}
                         value={line.quantity}
                         onChange={(event) => setQuantity(index, event.target.value)}
                       />

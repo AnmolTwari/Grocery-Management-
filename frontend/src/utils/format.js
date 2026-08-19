@@ -31,3 +31,10 @@ export function formatDateTime(value) {
     hour12: true,
   })
 }
+
+export function formatQuantity(value) {
+  if (value === null || value === undefined || value === '') return '—'
+  const numeric = Number(value)
+  if (Number.isNaN(numeric)) return '—'
+  return String(numeric)
+}
