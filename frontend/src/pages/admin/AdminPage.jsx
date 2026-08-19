@@ -199,12 +199,13 @@ export default function AdminPage() {
             </div>
             <div className="field">
               <label htmlFor="new-email" className="mb-1 block text-sm font-medium">
-                Email <span className="font-normal text-secondary">(optional)</span>
+                Email
               </label>
               <input
                 id="new-email"
                 type="email"
                 className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                required
                 maxLength={255}
                 autoComplete="off"
                 placeholder="staff@example.com"

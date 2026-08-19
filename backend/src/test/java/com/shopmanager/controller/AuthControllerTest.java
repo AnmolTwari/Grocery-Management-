@@ -24,6 +24,7 @@ import org.springframework.mock.web.MockHttpServletResponse;
 
 import com.shopmanager.dto.auth.AuthRequest;
 import com.shopmanager.dto.auth.AuthResponse;
+import com.shopmanager.dto.auth.LoginRequest;
 import com.shopmanager.entity.User;
 import com.shopmanager.exception.DuplicateResourceException;
 import com.shopmanager.repository.UserRepository;
@@ -56,11 +57,12 @@ class AuthControllerTest {
     private AuthController authController;
 
     private final AuthRequest request = new AuthRequest();
+    private final LoginRequest loginRequest = new LoginRequest();
 
     @Test
     void loginSetsHttpOnlyCookieAndReturnsUsername() {
-        request.setUsername("shopkeeper");
-        request.setPassword("shop123");
+        loginRequest.setUsername("shopkeeper");
+        loginRequest.setPassword("shop123");
 
         User user = User.builder()
                 .username("shopkeeper")
@@ -78,7 +80,7 @@ class AuthControllerTest {
 
         MockHttpServletRequest httpRequest = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
-        AuthResponse body = authController.login(request, httpRequest, response).getBody();
+        AuthResponse body = authController.login(loginRequest, httpRequest, response).getBody();
 
         assertThat(body).isNotNull();
         assertThat(body.getUsername()).isEqualTo("shopkeeper");
@@ -89,8 +91,8 @@ class AuthControllerTest {
 
     @Test
     void loginRecordsFailedAttemptOnBadCredentials() {
-        request.setUsername("shopkeeper");
-        request.setPassword("wrong");
+        loginRequest.setUsername("shopkeeper");
+        loginRequest.setPassword("wrong");
 
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenThrow(new BadCredentialsException("bad"));
@@ -98,7 +100,7 @@ class AuthControllerTest {
         MockHttpServletRequest httpRequest = new MockHttpServletRequest();
         MockHttpServletResponse response = new MockHttpServletResponse();
 
-        assertThatThrownBy(() -> authController.login(request, httpRequest, response))
+        assertThatThrownBy(() -> authController.login(loginRequest, httpRequest, response))
                 .isInstanceOf(BadCredentialsException.class);
         verify(rateLimiterService).recordFailedLogin(httpRequest, "shopkeeper");
     }

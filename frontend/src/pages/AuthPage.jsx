@@ -13,6 +13,7 @@ export default function AuthPage({ mode }) {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [identifier, setIdentifier] = useState('')
   const [fieldErrors, setFieldErrors] = useState({})
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -23,14 +24,23 @@ export default function AuthPage({ mode }) {
 
   function validate() {
     const errors = {}
-    const name = username.trim()
-    if (name.length < 3 || name.length > 50) {
-      errors.username = 'Username must be 3–50 characters.'
-    }
     if (isRegister) {
+      const name = username.trim()
+      if (name.length < 3 || name.length > 50) {
+        errors.username = 'Username must be 3–50 characters.'
+      }
       const mail = email.trim()
-      if (mail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
+      if (!mail) {
+        errors.email = 'Email is required.'
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail)) {
         errors.email = 'Enter a valid email address.'
+      }
+    } else {
+      const id = identifier.trim()
+      if (!id) {
+        errors.identifier = 'Enter your username or email.'
+      } else if (id.includes('@') && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)) {
+        errors.identifier = 'Enter a valid email address or username.'
       }
     }
     if (password.length < 6) {
@@ -51,10 +61,10 @@ export default function AuthPage({ mode }) {
     setLoading(true)
     try {
       if (isRegister) {
-        await auth.register(username.trim(), password, email.trim() || undefined)
+        await auth.register(username.trim(), password, email.trim())
         navigate('/login', { replace: true, state: { registered: true } })
       } else {
-        await auth.login(username.trim(), password)
+        await auth.login(identifier.trim(), password)
         navigate('/', { replace: true })
       }
     } catch (err) {
@@ -100,30 +110,52 @@ export default function AuthPage({ mode }) {
         )}
 
         <form className="flex flex-col gap-4" onSubmit={handleSubmit} noValidate>
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold" htmlFor="username">
-              {isRegister ? 'Username' : 'Username or email'}
-            </label>
-            <input
-              id="username"
-              className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
-              type="text"
-              autoComplete={isRegister ? 'username' : 'username'}
-              autoFocus
-              placeholder={isRegister ? 'e.g. mohan_sweets' : 'Your username or email'}
-              value={username}
-              onChange={(event) => setUsername(event.target.value)}
-              aria-invalid={Boolean(fieldErrors.username)}
-            />
-            {fieldErrors.username && (
-              <span className="text-[13px] text-danger">{fieldErrors.username}</span>
-            )}
-          </div>
+          {isRegister ? (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-semibold" htmlFor="username">
+                Username
+              </label>
+              <input
+                id="username"
+                className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                type="text"
+                autoComplete="username"
+                autoFocus
+                placeholder="e.g. mohan_sweets"
+                value={username}
+                onChange={(event) => setUsername(event.target.value)}
+                aria-invalid={Boolean(fieldErrors.username)}
+              />
+              {fieldErrors.username && (
+                <span className="text-[13px] text-danger">{fieldErrors.username}</span>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-semibold" htmlFor="identifier">
+                Email or username
+              </label>
+              <input
+                id="identifier"
+                className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                type="text"
+                autoComplete="username"
+                autoFocus
+                placeholder="you@shop.com or username"
+                value={identifier}
+                onChange={(event) => setIdentifier(event.target.value)}
+                aria-invalid={Boolean(fieldErrors.identifier)}
+              />
+              {fieldErrors.identifier && (
+                <span className="text-[13px] text-danger">{fieldErrors.identifier}</span>
+              )}
+            </div>
+          )}
 
           {isRegister && (
             <div className="flex flex-col gap-1">
               <label className="text-sm font-semibold" htmlFor="email">
-                Email <span className="font-normal text-secondary">(optional)</span>
+                Email
               </label>
               <input
                 id="email"

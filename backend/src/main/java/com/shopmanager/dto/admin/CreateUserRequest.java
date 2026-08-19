@@ -11,6 +11,7 @@ public record CreateUserRequest(
         @NotBlank(message = "Username is required")
         @Size(min = 3, max = 50, message = "Username must be 3-50 characters")
         String username,
+        @NotBlank(message = "Email is required")
         @Email(message = "Enter a valid email address")
         @Size(max = 255, message = "Email must be at most 255 characters")
         String email,

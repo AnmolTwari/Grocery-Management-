@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.shopmanager.dto.auth.AuthRequest;
 import com.shopmanager.dto.auth.AuthResponse;
+import com.shopmanager.dto.auth.LoginRequest;
 import com.shopmanager.entity.User;
 import com.shopmanager.entity.UserRole;
 import com.shopmanager.exception.DuplicateResourceException;
@@ -64,7 +65,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request,
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request,
             HttpServletRequest httpRequest, HttpServletResponse response) {
         rateLimiterService.checkLogin(httpRequest, request.getUsername());
 

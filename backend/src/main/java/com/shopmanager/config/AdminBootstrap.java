@@ -29,6 +29,9 @@ public class AdminBootstrap implements ApplicationRunner {
     @Value("${ADMIN_PASSWORD:}")
     private String adminPassword;
 
+    @Value("${ADMIN_EMAIL:}")
+    private String adminEmail;
+
     public AdminBootstrap(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -96,8 +99,22 @@ public class AdminBootstrap implements ApplicationRunner {
             return;
         }
 
+        String email = adminEmail == null ? "" : adminEmail.trim().toLowerCase();
+        if (email.isEmpty()) {
+            log.error("Cannot create admin user '{}': ADMIN_EMAIL is missing. "
+                    + "Set it in the backend .env file.", username);
+            return;
+        }
+        if (userRepository.existsByEmailIgnoreCase(email)) {
+            log.error("Cannot create admin user '{}': email '{}' is already registered to another "
+                    + "account. Use a different ADMIN_EMAIL in the backend .env file.", username,
+                    email);
+            return;
+        }
+
         User admin = User.builder()
                 .username(username)
+                .email(email)
                 .password(passwordEncoder.encode(password))
                 .role(UserRole.ADMIN)
                 .enabled(true)
