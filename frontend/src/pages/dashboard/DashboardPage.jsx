@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import RefreshButton from '../../components/RefreshButton'
 import {
   IconAlert,
   IconBanknote,
   IconBox,
   IconCart,
   IconChart,
+  IconRefresh,
   IconTrendDown,
   IconTrendUp,
 } from '../../components/icons'
@@ -123,8 +123,8 @@ export default function DashboardPage() {
 
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
           <h1 className="text-lg font-semibold min-[481px]:text-xl md:text-2xl">
             {greeting()}, {summary ? 'welcome back' : 'loading…'}
           </h1>
@@ -132,7 +132,16 @@ export default function DashboardPage() {
             Here&apos;s what&apos;s happening in your shop today.
           </p>
         </div>
-        <RefreshButton onClick={handleRefresh} disabled={loading} />
+        <button
+          type="button"
+          onClick={handleRefresh}
+          disabled={loading}
+          title="Refresh dashboard"
+          aria-label="Refresh dashboard"
+          className="mt-0.5 flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-sm border border-border bg-surface text-secondary transition-colors hover:enabled:border-primary hover:enabled:text-primary disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          <IconRefresh className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+        </button>
       </div>
 
       {error && (
