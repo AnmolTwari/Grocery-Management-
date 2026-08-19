@@ -143,8 +143,11 @@ export const auth = {
     return applyUser(data)
   },
 
-  register: (username, password, email) =>
-    request('/auth/register', { method: 'POST', body: { username, password, email } }),
+  register: (username, password, email, name) =>
+    request('/auth/register', {
+      method: 'POST',
+      body: { username, password, email, ...(name ? { name } : {}) },
+    }),
 
   logout: async () => {
     try {

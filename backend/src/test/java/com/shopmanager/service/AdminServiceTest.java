@@ -235,10 +235,11 @@ class AdminServiceTest {
         when(passwordEncoder.encode("secret123")).thenReturn("$2a$encoded");
 
         UserResponse created = adminService.createUser(new CreateUserRequest(
-                "newstaff", "newstaff@example.com", "secret123", UserRole.USER));
+                "newstaff", "newstaff@example.com", "secret123", "New Staff", UserRole.USER));
 
         assertThat(created.username()).isEqualTo("newstaff");
         assertThat(created.email()).isEqualTo("newstaff@example.com");
+        assertThat(created.name()).isEqualTo("New Staff");
         assertThat(created.role()).isEqualTo(UserRole.USER);
         assertThat(created.enabled()).isTrue();
         verify(userRepository).save(any(User.class));
@@ -250,7 +251,7 @@ class AdminServiceTest {
         when(userRepository.existsByUsername("newstaff")).thenReturn(false);
 
         UserResponse created = adminService
-                .createUser(new CreateUserRequest("newstaff", " ", "secret123", UserRole.USER));
+                .createUser(new CreateUserRequest("newstaff", " ", "secret123", null, UserRole.USER));
 
         assertThat(created.email()).isNull();
     }
@@ -260,7 +261,7 @@ class AdminServiceTest {
         when(userRepository.existsByUsername("taken")).thenReturn(true);
 
         assertThatThrownBy(() -> adminService.createUser(
-                new CreateUserRequest("taken", null, "secret123", UserRole.USER)))
+                new CreateUserRequest("taken", null, "secret123", null, UserRole.USER)))
                 .isInstanceOf(DuplicateResourceException.class)
                 .extracting(ex -> ((DuplicateResourceException) ex).getErrorCode())
                 .isEqualTo("USERNAME_TAKEN");
@@ -273,7 +274,7 @@ class AdminServiceTest {
         when(userRepository.existsByEmailIgnoreCase("used@example.com")).thenReturn(true);
 
         assertThatThrownBy(() -> adminService.createUser(
-                new CreateUserRequest("newstaff", "used@example.com", "secret123", UserRole.ADMIN)))
+                new CreateUserRequest("newstaff", "used@example.com", "secret123", null, UserRole.ADMIN)))
                 .isInstanceOf(DuplicateResourceException.class)
                 .extracting(ex -> ((DuplicateResourceException) ex).getErrorCode())
                 .isEqualTo("EMAIL_TAKEN");

@@ -10,6 +10,7 @@ export default function AuthPage({ mode }) {
 
   const [username, setUsername] = useState('')
   const [email, setEmail] = useState('')
+  const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -25,9 +26,15 @@ export default function AuthPage({ mode }) {
   function validate() {
     const errors = {}
     if (isRegister) {
-      const name = username.trim()
-      if (name.length < 3 || name.length > 50) {
+      const usernameValue = username.trim()
+      if (usernameValue.length < 3 || usernameValue.length > 50) {
         errors.username = 'Username must be 3–50 characters.'
+      }
+      const displayName = name.trim()
+      if (!displayName) {
+        errors.name = 'Name is required.'
+      } else if (displayName.length > 100) {
+        errors.name = 'Name must be at most 100 characters.'
       }
       const mail = email.trim()
       if (!mail) {
@@ -61,7 +68,7 @@ export default function AuthPage({ mode }) {
     setLoading(true)
     try {
       if (isRegister) {
-        await auth.register(username.trim(), password, email.trim())
+        await auth.register(username.trim(), password, email.trim(), name.trim())
         navigate('/login', { replace: true, state: { registered: true } })
       } else {
         await auth.login(identifier.trim(), password)
@@ -148,6 +155,27 @@ export default function AuthPage({ mode }) {
               />
               {fieldErrors.identifier && (
                 <span className="text-[13px] text-danger">{fieldErrors.identifier}</span>
+              )}
+            </div>
+          )}
+
+          {isRegister && (
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-semibold" htmlFor="name">
+                Name
+              </label>
+              <input
+                id="name"
+                className="min-h-10 rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                type="text"
+                autoComplete="name"
+                placeholder="e.g. Mohan"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                aria-invalid={Boolean(fieldErrors.name)}
+              />
+              {fieldErrors.name && (
+                <span className="text-[13px] text-danger">{fieldErrors.name}</span>
               )}
             </div>
           )}

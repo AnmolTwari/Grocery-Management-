@@ -19,4 +19,7 @@ public class AuthRequest {
     @NotBlank(message = "Password is required")
     @Size(min = 6, max = 100, message = "Password must be 6-100 characters")
     private String password;
+
+    @Size(max = 100, message = "Name must be at most 100 characters")
+    private String name;
 }

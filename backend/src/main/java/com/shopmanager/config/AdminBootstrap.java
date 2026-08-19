@@ -72,6 +72,12 @@ public class AdminBootstrap implements ApplicationRunner {
                 log.info("Promoted user '{}' to ADMIN (configured via ADMIN_USERNAME)", username);
             }
 
+            if (user.getName() == null || user.getName().isBlank()) {
+                user.setName("Admin");
+                changed = true;
+                log.info("Set display name for admin user '{}'", username);
+            }
+
             if (!password.isEmpty()) {
                 if (password.length() < MIN_ADMIN_PASSWORD_LENGTH) {
                     log.error("ADMIN_PASSWORD in the backend .env is shorter than {} characters. "
@@ -115,6 +121,7 @@ public class AdminBootstrap implements ApplicationRunner {
         User admin = User.builder()
                 .username(username)
                 .email(email)
+                .name("Admin")
                 .password(passwordEncoder.encode(password))
                 .role(UserRole.ADMIN)
                 .enabled(true)

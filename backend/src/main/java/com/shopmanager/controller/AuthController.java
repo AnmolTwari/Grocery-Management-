@@ -60,6 +60,7 @@ public class AuthController {
         return ResponseEntity.ok(AuthResponse.builder()
                 .username(current.getUsername())
                 .email(current.getEmail())
+                .name(current.getName())
                 .role(roleOf(current))
                 .build());
     }
@@ -81,6 +82,7 @@ public class AuthController {
             return ResponseEntity.ok(AuthResponse.builder()
                     .username(userDetails.getUsername())
                     .email(user.getEmail())
+                    .name(user.getName())
                     .role(roleOf(user))
                     .build());
         } catch (BadCredentialsException e) {
@@ -108,6 +110,7 @@ public class AuthController {
         User user = User.builder()
                 .username(request.getUsername())
                 .email(email)
+                .name(normalizeName(request.getName()))
                 .password(passwordEncoder.encode(request.getPassword()))
                 .enabled(true)
                 .build();
@@ -118,6 +121,7 @@ public class AuthController {
         return ResponseEntity.ok(AuthResponse.builder()
                 .username(user.getUsername())
                 .email(user.getEmail())
+                .name(user.getName())
                 .role(roleOf(user))
                 .build());
     }
@@ -131,5 +135,13 @@ public class AuthController {
     private String roleOf(User user) {
         UserRole effective = user.getRole() != null ? user.getRole() : UserRole.USER;
         return effective.name();
+    }
+
+    private String normalizeName(String name) {
+        if (name == null) {
+            return null;
+        }
+        String trimmed = name.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }

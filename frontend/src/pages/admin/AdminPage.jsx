@@ -39,6 +39,7 @@ export default function AdminPage() {
     username: '',
     email: '',
     password: '',
+    name: '',
     role: 'USER',
   })
   const [creating, setCreating] = useState(false)
@@ -46,7 +47,7 @@ export default function AdminPage() {
   const currentUserId = auth.getCurrentUser()?.username
 
   function resetCreateForm() {
-    setCreateForm({ username: '', email: '', password: '', role: 'USER' })
+    setCreateForm({ username: '', email: '', password: '', name: '', role: 'USER' })
   }
 
   async function handleCreateUser(event) {
@@ -235,6 +236,22 @@ export default function AdminPage() {
               />
             </div>
             <div className="field">
+              <label htmlFor="new-name" className="mb-1 block text-sm font-medium">
+                Name
+              </label>
+              <input
+                id="new-name"
+                className="min-h-10 w-full rounded-sm border border-border bg-surface px-3 py-2 text-sm text-text focus-visible:border-primary focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-primary"
+                maxLength={100}
+                autoComplete="off"
+                placeholder="e.g. Mohan"
+                value={createForm.name}
+                onChange={(event) =>
+                  setCreateForm((form) => ({ ...form, name: event.target.value }))
+                }
+              />
+            </div>
+            <div className="field">
               <label htmlFor="new-role" className="mb-1 block text-sm font-medium">
                 Role
               </label>
@@ -280,6 +297,9 @@ export default function AdminPage() {
                     Username
                   </th>
                   <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
+                    Name
+                  </th>
+                  <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
                     Email
                   </th>
                   <th className="border-b border-border p-3 text-left align-middle text-xs font-semibold tracking-wider text-muted uppercase">
@@ -314,6 +334,9 @@ export default function AdminPage() {
                             </span>
                           )}
                         </div>
+                      </td>
+                      <td className="border-b border-border p-3 text-left align-middle">
+                        {user.name || <span className="text-muted">—</span>}
                       </td>
                       <td className="border-b border-border p-3 text-left align-middle">
                         {user.email || <span className="text-muted">—</span>}

@@ -4,9 +4,10 @@ export function listUsers({ page = 0, size = 20 } = {}) {
   return api.get(`/admin/users?page=${page}&size=${size}`)
 }
 
-export function createUser({ username, email, password, role }) {
+export function createUser({ username, email, password, name, role }) {
   const body = { username, password, role }
   if (email) body.email = email
+  if (name) body.name = name
   return api.post('/admin/users', body)
 }
 

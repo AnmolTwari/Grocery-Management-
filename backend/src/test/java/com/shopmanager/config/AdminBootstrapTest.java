@@ -38,7 +38,7 @@ class AdminBootstrapTest {
     @BeforeEach
     void setUp() {
         bootstrap = new AdminBootstrap(userRepository, passwordEncoder);
-        admin = User.builder().id(1L).username("admin").role(UserRole.ADMIN)
+        admin = User.builder().id(1L).username("admin").name("Admin").role(UserRole.ADMIN)
                 .password("$2a$old-hash").enabled(true).build();
         when(userRepository.findByUsername("admin")).thenReturn(Optional.of(admin));
         when(userRepository.save(any(User.class)))

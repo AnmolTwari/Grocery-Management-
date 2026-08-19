@@ -67,6 +67,7 @@ public class AdminService {
         User user = User.builder()
                 .username(request.username())
                 .email(email)
+                .name(normalizeName(request.name()))
                 .password(passwordEncoder.encode(request.password()))
                 .role(request.role())
                 .enabled(true)
@@ -161,5 +162,13 @@ public class AdminService {
 
     private boolean isLastAdmin(User user) {
         return user.getRole() == UserRole.ADMIN && userRepository.countByRole(UserRole.ADMIN) == 1;
+    }
+
+    private String normalizeName(String name) {
+        if (name == null) {
+            return null;
+        }
+        String trimmed = name.trim();
+        return trimmed.isEmpty() ? null : trimmed;
     }
 }
