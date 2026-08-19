@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import RevenueChart from '../../components/RevenueChart'
 import {
   IconAlert,
   IconBanknote,
@@ -12,13 +13,13 @@ import {
 } from '../../components/icons'
 import { getDashboardSummary } from '../../services/dashboard'
 import { formatCurrency, formatDateTime } from '../../utils/format'
-import { api } from '../../services/api'
+import { api, auth } from '../../services/api'
 
 function greeting() {
   const hour = new Date().getHours()
-  if (hour < 12) return 'Good morning'
-  if (hour < 17) return 'Good afternoon'
-  return 'Good evening'
+  if (hour < 12) return 'Good Morning'
+  if (hour < 17) return 'Good Afternoon'
+  return 'Good Evening'
 }
 
 function TrendPill({ today, yesterday, format }) {
@@ -44,12 +45,24 @@ function TrendPill({ today, yesterday, format }) {
 
 export default function DashboardPage() {
   const [summary, setSummary] = useState(null)
+  const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [reload, setReload] = useState(0)
+  const [alertDismissed, setAlertDismissed] = useState(
+    () => localStorage.getItem(`stock_alert_dismissed_${new Date().toDateString()}`) === '1',
+  )
 
   useEffect(() => {
     let cancelled = false
+    auth
+      .me()
+      .then((data) => {
+        if (!cancelled) setUser(data)
+      })
+      .catch(() => {
+        // session errors surface through the summary request below
+      })
     getDashboardSummary()
       .then((data) => {
         if (!cancelled) setSummary(data)
@@ -70,6 +83,11 @@ export default function DashboardPage() {
     setReload((n) => n + 1)
   }
 
+  function dismissStockAlert() {
+    localStorage.setItem(`stock_alert_dismissed_${new Date().toDateString()}`, '1')
+    setAlertDismissed(true)
+  }
+
   const cards = summary
     ? [
         {
@@ -78,6 +96,7 @@ export default function DashboardPage() {
           hint: 'Sales',
           Icon: IconCart,
           accent: 'bg-primary-light text-primary',
+          to: '/sales',
           trend: <TrendPill today={summary.salesToday} yesterday={summary.salesYesterday} />,
         },
         {
@@ -108,6 +127,7 @@ export default function DashboardPage() {
           hint: 'Products',
           Icon: IconBox,
           accent: 'bg-info-light text-info',
+          to: '/products',
           trend: (
             <span className={`text-xs ${summary.lowStockCount > 0 || summary.outOfStockCount > 0 ? 'text-warning' : 'text-muted'}`}>
               {summary.lowStockCount} low · {summary.outOfStockCount} out of stock
@@ -118,15 +138,13 @@ export default function DashboardPage() {
     : []
 
   const revenueSeries = summary?.dailyRevenue ?? []
-  const maxRevenue = Math.max(1, ...revenueSeries.map((p) => Number(p.total)))
-  const todayLabel = new Date().toDateString()
 
   return (
     <div className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col gap-4 p-3 px-4 pb-10 md:p-6">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h1 className="text-lg font-semibold min-[481px]:text-xl md:text-2xl">
-            {greeting()}, {summary ? 'welcome back' : 'loading…'}
+            {greeting()}, {user ? user.name || user.username : 'loading…'}
           </h1>
           <p className="mt-1 text-sm text-secondary">
             Here&apos;s what&apos;s happening in your shop today.
@@ -154,52 +172,90 @@ export default function DashboardPage() {
 
       {summary && (
         <>
-          {(summary.lowStockCount > 0 || summary.outOfStockCount > 0) && (
-            <Link
-              to="/inventory"
-              className="flex flex-col items-start gap-1.5 rounded-sm border border-[#fde68a] bg-[#fef9c3] px-4 py-3 text-sm text-[#713f12] transition-colors hover:bg-[#fef3c7] sm:flex-row sm:items-center sm:gap-3"
-            >
-              <span className="flex items-center gap-3">
-                <IconAlert size={18} className="shrink-0 text-warning" />
-                <span>
-                  <strong>
-                    {summary.outOfStockCount > 0
-                      ? `${summary.outOfStockCount} product${summary.outOfStockCount > 1 ? 's are' : ' is'} out of stock`
-                      : ''}
-                    {summary.outOfStockCount > 0 && summary.lowStockCount > 0 ? ' and ' : ''}
-                    {summary.lowStockCount > 0
-                      ? `${summary.lowStockCount} product${summary.lowStockCount > 1 ? 's are' : ' is'} running low`
-                      : ''}
-                  </strong>{' '}
-                  — restock them now to avoid missed sales.
+          {(summary.lowStockCount > 0 || summary.outOfStockCount > 0) && !alertDismissed && (
+            <div className="relative rounded-sm border border-[#fde68a] bg-[#fef9c3] text-sm text-[#713f12]">
+              <Link
+                to={
+                  summary.outOfStockCount > 0
+                    ? '/products?stock=OUT_OF_STOCK'
+                    : '/products?stock=LOW_STOCK'
+                }
+                className="flex flex-col items-start gap-1.5 px-4 py-3 pr-12 transition-colors hover:bg-[#fef3c7] sm:flex-row sm:items-center sm:gap-3"
+              >
+                <span className="flex min-w-0 items-center gap-3">
+                  <IconAlert size={18} className="shrink-0 text-warning" />
+                  <span className="min-w-0">
+                    <strong>
+                      {summary.outOfStockCount > 0
+                        ? `${summary.outOfStockCount} product${summary.outOfStockCount > 1 ? 's are' : ' is'} out of stock`
+                        : ''}
+                      {summary.outOfStockCount > 0 && summary.lowStockCount > 0 ? ' and ' : ''}
+                      {summary.lowStockCount > 0
+                        ? `${summary.lowStockCount} product${summary.lowStockCount > 1 ? 's are' : ' is'} running low`
+                        : ''}
+                    </strong>{' '}
+                    — restock them now to avoid missed sales.
+                    {(summary.outOfStockProducts?.length > 0 ||
+                      summary.lowStockProducts?.length > 0) && (
+                      <span className="mt-0.5 block text-[13px] [overflow-wrap:anywhere]">
+                        {[
+                          ...(summary.outOfStockProducts ?? []).map((name) => `${name} (out of stock)`),
+                          ...(summary.lowStockProducts ?? []).map((name) => `${name} (low)`),
+                        ].join(', ')}
+                      </span>
+                    )}
+                  </span>
                 </span>
-              </span>
-              <span className="font-semibold sm:ml-auto sm:shrink-0">View inventory →</span>
-            </Link>
+                <span className="font-semibold sm:ml-auto sm:shrink-0">View products →</span>
+              </Link>
+              <button
+                type="button"
+                onClick={dismissStockAlert}
+                title="Dismiss alert"
+                aria-label="Dismiss stock alert"
+                className="absolute top-2 right-2 flex h-7 w-7 cursor-pointer items-center justify-center rounded-sm border-none bg-transparent text-[#92400e] transition-colors hover:bg-[#fde68a]"
+              >
+                ✕
+              </button>
+            </div>
           )}
 
           <div className="grid grid-cols-2 gap-3 min-[481px]:gap-4 lg:grid-cols-4">
-            {cards.map((card) => (
-              <div
-                className="flex min-w-0 flex-col gap-2.5 rounded-lg border border-border bg-surface p-3 shadow-sm md:gap-3 md:p-4"
-                key={card.label}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="min-w-0 text-[12px] font-medium text-secondary min-[481px]:text-[13px]">
-                    {card.label}
-                  </span>
-                  <span
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full min-[481px]:h-9 min-[481px]:w-9 ${card.accent}`}
-                  >
-                    <card.Icon size={18} />
-                  </span>
+            {cards.map((card) => {
+              const content = (
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="min-w-0 text-[12px] font-medium text-secondary min-[481px]:text-[13px]">
+                      {card.label}
+                    </span>
+                    <span
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full min-[481px]:h-9 min-[481px]:w-9 ${card.accent}`}
+                    >
+                      <card.Icon size={18} />
+                    </span>
+                  </div>
+                  <div className="min-w-0 text-[19px] leading-tight font-bold text-text [overflow-wrap:anywhere] min-[481px]:text-[22px] md:text-[26px]">
+                    {card.value}
+                  </div>
+                  <div className="max-w-full text-xs text-secondary">{card.trend}</div>
+                </>
+              )
+              const className =
+                'flex min-w-0 flex-col gap-2.5 rounded-lg border border-border bg-surface p-3 shadow-sm md:gap-3 md:p-4'
+              return card.to ? (
+                <Link
+                  to={card.to}
+                  key={card.label}
+                  className={`${className} cursor-pointer transition-colors hover:border-primary hover:bg-bg`}
+                >
+                  {content}
+                </Link>
+              ) : (
+                <div className={className} key={card.label}>
+                  {content}
                 </div>
-                <div className="min-w-0 text-[19px] leading-tight font-bold text-text [overflow-wrap:anywhere] min-[481px]:text-[22px] md:text-[26px]">
-                  {card.value}
-                </div>
-                <div className="max-w-full text-xs text-secondary">{card.trend}</div>
-              </div>
-            ))}
+              )
+            })}
           </div>
 
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -211,31 +267,7 @@ export default function DashboardPage() {
                 </h2>
                 <span className="text-xs text-secondary">Revenue</span>
               </div>
-              <div className="flex h-40 items-end gap-2 md:h-48 md:gap-3">
-                {revenueSeries.map((point) => {
-                  const height = Math.max(4, (Number(point.total) / maxRevenue) * 100)
-                  const isToday = new Date(point.date).toDateString() === todayLabel
-                  return (
-                    <div
-                      className="group flex flex-1 flex-col items-center gap-1.5"
-                      key={point.date}
-                      title={`${point.date} · ${formatCurrency(point.total)}`}
-                    >
-                      <div
-                        className={`w-full rounded-t-sm transition-colors ${
-                          isToday ? 'bg-primary' : 'bg-primary-light group-hover:bg-primary/70'
-                        }`}
-                        style={{ height: `${height}%` }}
-                      />
-                      <span className={`text-[10px] md:text-xs ${isToday ? 'font-semibold text-primary' : 'text-muted'}`}>
-                        {isToday
-                          ? 'Today'
-                          : new Date(point.date).toLocaleDateString(undefined, { weekday: 'short' })}
-                      </span>
-                    </div>
-                  )
-                })}
-              </div>
+              <RevenueChart data={revenueSeries} />
               <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-sm">
                 <span className="text-secondary">Total this week</span>
                 <span className="font-semibold">

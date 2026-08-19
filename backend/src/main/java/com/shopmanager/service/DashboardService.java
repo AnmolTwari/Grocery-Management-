@@ -31,6 +31,7 @@ public class DashboardService {
 
     private static final int RECENT_SALES_LIMIT = 5;
     private static final int DAILY_REVENUE_DAYS = 7;
+    private static final int ATTENTION_PRODUCTS_LIMIT = 5;
 
     private final SaleRepository saleRepository;
     private final ProductRepository productRepository;
@@ -78,11 +79,20 @@ public class DashboardService {
                 () -> productRepository.countLowStock(owner), queryExecutor);
         CompletableFuture<Long> outOfStock = CompletableFuture.supplyAsync(
                 () -> productRepository.countOutOfStock(owner), queryExecutor);
+        CompletableFuture<List<String>> lowStockNames = CompletableFuture.supplyAsync(
+                () -> productRepository.findLowStockProductNames(owner,
+                        PageRequest.of(0, ATTENTION_PRODUCTS_LIMIT)),
+                queryExecutor);
+        CompletableFuture<List<String>> outOfStockNames = CompletableFuture.supplyAsync(
+                () -> productRepository.findOutOfStockProductNames(owner,
+                        PageRequest.of(0, ATTENTION_PRODUCTS_LIMIT)),
+                queryExecutor);
         CompletableFuture<List<Object[]>> dailyRows = CompletableFuture.supplyAsync(
                 () -> saleRepository.sumDailyRevenue(owner, startOfWindow), queryExecutor);
 
         CompletableFuture.allOf(recent, salesToday, revenue, profit, salesYesterday,
-                revenueYesterday, products, lowStock, outOfStock, dailyRows).join();
+                revenueYesterday, products, lowStock, outOfStock, lowStockNames,
+                outOfStockNames, dailyRows).join();
 
         List<SaleSummaryResponse> recentSales = recent.join().getContent().stream()
                 .map(SaleSummaryResponse::from).toList();
@@ -96,6 +106,8 @@ public class DashboardService {
                 products.join(),
                 lowStock.join(),
                 outOfStock.join(),
+                lowStockNames.join(),
+                outOfStockNames.join(),
                 dailyRevenueSeries(dailyRows.join(), startOfWindow.toLocalDate(), today),
                 recentSales);
     }

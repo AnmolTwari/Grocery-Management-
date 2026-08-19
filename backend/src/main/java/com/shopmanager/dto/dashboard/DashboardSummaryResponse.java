@@ -16,6 +16,8 @@ public record DashboardSummaryResponse(
         long totalProducts,
         long lowStockCount,
         long outOfStockCount,
+        List<String> lowStockProducts,
+        List<String> outOfStockProducts,
         List<DailyRevenuePoint> dailyRevenue,
         List<SaleSummaryResponse> recentSales) {
 
